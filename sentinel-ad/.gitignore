@@ -1,0 +1,5 @@
+# render intermediates (keep only the final ads)
+out/*
+!out/Sentinel_Ad_9x16.mp4
+!out/Sentinel_Ad_16x9.mp4
+node_modules/

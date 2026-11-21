@@ -1,0 +1,91 @@
+@font-face { font-family: 'Sentinel Display'; font-weight: 300; src: url('../fonts/InterDisplay-Light.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Display'; font-weight: 400; src: url('../fonts/InterDisplay-Regular.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Display'; font-weight: 500; src: url('../fonts/InterDisplay-Medium.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Display'; font-weight: 600; src: url('../fonts/InterDisplay-SemiBold.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Display'; font-weight: 700; src: url('../fonts/InterDisplay-Bold.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Display'; font-weight: 500; font-style: italic; src: url('../fonts/InterDisplay-MediumItalic.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Text'; font-weight: 400; src: url('../fonts/Inter-Regular.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Text'; font-weight: 500; src: url('../fonts/Inter-Medium.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Text'; font-weight: 600; src: url('../fonts/Inter-SemiBold.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Text'; font-weight: 700; src: url('../fonts/Inter-SemiBold.otf') format('opentype'); }
+@font-face { font-family: 'Sentinel Mono'; font-weight: 400; src: url('../fonts/JetBrainsMono-Regular.ttf') format('truetype'); }
+@font-face { font-family: 'Sentinel Mono'; font-weight: 500; src: url('../fonts/JetBrainsMono-Medium.ttf') format('truetype'); }
+@font-face { font-family: 'Sentinel Mono'; font-weight: 600; src: url('../fonts/JetBrainsMono-Bold.ttf') format('truetype'); }
+@font-face { font-family: 'Sentinel Mono'; font-weight: 700; src: url('../fonts/JetBrainsMono-Bold.ttf') format('truetype'); }
+
+:root { color-scheme: dark; }
+html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+body.preview { background: #050608; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+#stage { position: relative; overflow: hidden; background: #030509; transform-origin: 0 0; }
+body.preview #stage { box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6); }
+#c { position: absolute; inset: 0; display: block; }
+
+#text {
+  position: absolute; inset: 0; pointer-events: none;
+  color: #f3f6fa;
+  font-family: 'Sentinel Display', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  font-kerning: normal;
+}
+.beat { position: absolute; left: 0; width: 100%; text-align: center; transform: translateY(-50%); visibility: hidden; }
+.block { font-weight: 600; letter-spacing: -0.032em; line-height: 1.06; white-space: nowrap; }
+.line { display: block; }
+.word { display: inline-block; position: relative; vertical-align: top; }
+.ch {
+  position: absolute; top: 0; display: inline-block; white-space: pre;
+  text-shadow: 0 0.04em 0.5em rgba(0, 0, 0, 0.55);
+  will-change: transform, filter, opacity;
+}
+.ch.acc { color: var(--acc-hot); text-shadow: 0 0 0.32em var(--acc-glow), 0 0 0.9em var(--acc-glow); }
+.sub {
+  margin-top: 0.85em; font-family: 'Sentinel Text', sans-serif; font-weight: 500; letter-spacing: 0.005em;
+  color: #9aa6b8; display: inline-block; white-space: nowrap;
+}
+
+/* credit */
+.credit .over {
+  font-family: 'Sentinel Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.34em;
+  color: #8f9bad; display: inline-block; margin-bottom: 0.7em; padding-left: 0.34em;
+}
+.credit .name { font-weight: 500; letter-spacing: -0.03em; }
+.credit .rule {
+  position: absolute; left: 50%; height: max(2px, calc(var(--u) * 2.4)); margin-top: 0.55em;
+  background: linear-gradient(90deg, transparent, var(--acc-hot) 30%, var(--acc-hot) 70%, transparent);
+  box-shadow: 0 0 calc(var(--u) * 16) var(--acc-glow);
+  transform-origin: 50% 50%; transform: translateX(-50%) scaleX(0);
+}
+
+/* end card */
+.wordmark { font-weight: 600; letter-spacing: 0.34em; padding-left: 0.34em; }
+.wordmark .ch { text-shadow: 0 0 0.6em rgba(63, 230, 255, 0.25); }
+.tagline { font-weight: 500; letter-spacing: -0.025em; color: #dfe6ee; margin-top: 0.38em; }
+.cta {
+  position: absolute; left: 50%; margin-top: 1.25em;
+  display: inline-flex; align-items: center; gap: 0.75em; white-space: nowrap; overflow: hidden;
+  padding: 0.82em 1.35em 0.82em 1.55em; border-radius: 999px;
+  font-family: 'Sentinel Text', sans-serif; font-weight: 600; letter-spacing: 0.01em;
+  color: #021015;
+  background: linear-gradient(180deg, #8ff4ff 0%, #3fe6ff 55%, #21c8e6 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset, 0 0.5em 2.2em rgba(63, 230, 255, 0.35), 0 0 4em rgba(63, 230, 255, 0.25);
+  transform-origin: 50% 50%;
+}
+.cta-sep { width: 1px; height: 1.1em; background: rgba(2, 16, 21, 0.35); }
+.cta-price { font-weight: 700; }
+.cta-arrow { font-weight: 600; }
+.cta-glint {
+  position: absolute; top: -20%; left: 0; width: 28%; height: 140%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+  opacity: 0;
+}
+
+/* preview controls (not rendered into the video) */
+#bar { display: none; }
+body.preview #bar {
+  display: flex; align-items: center; gap: 12px; margin-top: 14px; width: min(92vw, 720px);
+  font: 500 12px/1 'Sentinel Mono', monospace; color: #8b96a8; letter-spacing: 0.08em;
+}
+#bar button { background: #12161d; color: #dfe6ee; border: 1px solid #252b35; border-radius: 6px; padding: 7px 12px; font: inherit; cursor: pointer; }
+#scrub { flex: 1; height: 6px; background: #161b23; border-radius: 3px; position: relative; cursor: pointer; }
+#scrub i { position: absolute; left: 0; top: 0; bottom: 0; background: #3fe6ff; border-radius: 3px; }
