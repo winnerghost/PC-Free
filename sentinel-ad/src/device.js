@@ -64,23 +64,44 @@ export function buildDevice(cfg) {
   lensG.position.set(0, LY, GZ);
   g.add(lensG);
   // the light ring (emissive, drives the bloom)
+  // seal = 1 while the comet first closes into the ring: the gap stays dark and the head closes
+  // it, while the tail's gradient tightens and the brightness levels out. Nothing fills in all at
+  // once, so no part of the ring jumps over the bloom threshold in a single frame.
+  // seal = 0 (when the ring opens up again at the end) keeps the soft fade-out.
   const arcGLSL = `
+    uniform float seal;
+    float arcAt(float u, float len){
+      float full = smoothstep(6.2831853 - 1.4, 6.2831853, len); // how close the ring is to complete
+      float fs = full * seal;
+      float hw = mix(1.0, 0.05, fs);
+      float m = 0.0;
+      if (u <= len + 0.02*hw) {
+        float tail = smoothstep(0.0, mix(max(0.05, len*0.55), 0.002, fs), u);
+        float head = smoothstep(len + 0.02*hw, len - 0.01*hw, u);
+        m = tail*head*mix(0.65 + 0.35*smoothstep(len*0.5, len, u), 1.0, fs);
+      }
+      return mix(m, 1.0, full * (1.0 - seal));
+    }
+    float arcU(vec2 p, float a0){ float a = atan(p.x, p.y); if (a < 0.0) a += 6.2831853; float u = a - a0; return u - 6.2831853*floor(u/6.2831853); }
     float arcMask(vec2 p, float a0, float a1){
       if (a1 - a0 >= 6.2831) return 1.0;
-      float a = atan(p.x, p.y); if (a < 0.0) a += 6.2831853;
-      float u = a - a0; u = u - 6.2831853*floor(u/6.2831853);
-      float len = a1 - a0;
-      float full = smoothstep(6.2831853 - 1.4, 6.2831853, len); // blend into the full ring: no pop
-      float m = 0.0;
-      if (u <= len + 0.02) {
-        float tail = smoothstep(0.0, max(0.05, len*0.55), u);
-        float head = smoothstep(len + 0.02, len - 0.01, u);
-        m = tail*head*(0.65 + 0.35*smoothstep(len*0.5, len, u));
+      return arcAt(arcU(p, a0), a1 - a0);
+    }
+    // the glow around the arc: blurred along the ring by up to w radians either side, since a lit
+    // segment also lights the space around its ends (no hard pie-slice edges in the glow)
+    float arcGlow(vec2 p, float a0, float a1, float w){
+      if (a1 - a0 >= 6.2831) return 1.0;
+      float u0 = arcU(p, a0), len = a1 - a0;
+      if (w <= 0.0) return arcAt(u0, len);
+      float acc = 0.0;
+      for (int i = 0; i < 9; i++) {
+        float u = u0 + w * (float(i) * 0.25 - 1.0);
+        acc += arcAt(u - 6.2831853*floor(u/6.2831853), len);
       }
-      return mix(m, 1.0, full);
+      return acc / 9.0;
     }`;
   const ringMat = new THREE.ShaderMaterial({
-    uniforms: { col: { value: new THREE.Color(cfg.ring) }, k: { value: 0 }, arc0: { value: 0 }, arc1: { value: Math.PI * 2 } },
+    uniforms: { col: { value: new THREE.Color(cfg.ring) }, k: { value: 0 }, arc0: { value: 0 }, arc1: { value: Math.PI * 2 }, seal: { value: 0 } },
     vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
     fragmentShader: `uniform vec3 col; uniform float k; uniform float arc0; uniform float arc1; varying vec3 vP; ${'${arcGLSL}'}
       void main(){ float m = arcMask(vP.xy, arc0, arc1); if (m <= 0.001) discard; gl_FragColor = vec4(mix(col, vec3(1.0), 0.35) * k * m, 1.0); }`,
@@ -92,11 +113,12 @@ export function buildDevice(cfg) {
   // diffused halo of the ring under the glass
   const haloMat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    uniforms: { col: { value: new THREE.Color(cfg.ring) }, k: { value: 0 }, arc0: { value: 0 }, arc1: { value: Math.PI * 2 } },
+    uniforms: { col: { value: new THREE.Color(cfg.ring) }, k: { value: 0 }, arc0: { value: 0 }, arc1: { value: Math.PI * 2 }, seal: { value: 0 } },
     vertexShader: 'varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
     fragmentShader: `uniform vec3 col; uniform float k; uniform float arc0; uniform float arc1; varying vec2 vP; ARC
       void main(){ float r = length(vP); float d = abs(r-0.315);
-        float on = arcMask(vP, arc0, arc1);
+        float fs = seal * smoothstep(6.2831853 - 1.4, 6.2831853, arc1 - arc0);
+        float on = arcGlow(vP, arc0, arc1, fs * (0.05 + 1.5*d));
         float g = exp(-d*d/(0.0012)) * 0.9 + exp(-d*d/0.012)*0.12;
         gl_FragColor = vec4(col * g * k * on, 1.0); }`,
   });
@@ -175,15 +197,37 @@ export function buildDevice(cfg) {
   ringLight.position.set(0, LY, GZ + 0.25);
   ringLight.visible = false; // too faint to matter, and every light costs per pixel
 
+  // Optional cap on the direct (spot-light) highlights of the unit. A studio light grazing a
+  // rounded edge of the glass or the aluminium can make a highlight so small and bright that it
+  // blooms into a one-frame flash; the cap keeps such glints in check where the timeline asks
+  // for it. specMax = 1e6 means no cap, and then the shaders give exactly the uncapped result.
+  const specMax = { value: 1e6 };
+  const capped = new Set();
+  g.traverse((o) => {
+    const m = o.material;
+    if (!o.isMesh || !m || !m.isMeshStandardMaterial || capped.has(m)) return;
+    capped.add(m);
+    m.onBeforeCompile = (sh) => {
+      sh.uniforms.specMax = specMax;
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float specMax;')
+        .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
+          reflectedLight.directSpecular = min(reflectedLight.directSpecular, vec3(specMax));
+          #ifdef USE_CLEARCOAT
+            clearcoatSpecularDirect = min(clearcoatSpecularDirect, vec3(specMax));
+          #endif`);
+    };
+  });
+
   return {
     group: g,
-    parts: { ringMat, haloMat, statusMat, ringLight, metal, glass, lensMat },
+    parts: { ringMat, haloMat, statusMat, ringLight, metal, glass, lensMat, specMax },
     lensLocal: new THREE.Vector3(0, LY, GZ),
-    setRing(intensity, arc0 = 0, arc1 = Math.PI * 2) {
+    setRing(intensity, arc0 = 0, arc1 = Math.PI * 2, seal = 0) {
       ringMat.uniforms.k.value = intensity * 3.2;
-      ringMat.uniforms.arc0.value = arc0; ringMat.uniforms.arc1.value = arc1;
+      ringMat.uniforms.arc0.value = arc0; ringMat.uniforms.arc1.value = arc1; ringMat.uniforms.seal.value = seal;
       haloMat.uniforms.k.value = intensity * 0.32;
-      haloMat.uniforms.arc0.value = arc0; haloMat.uniforms.arc1.value = arc1;
+      haloMat.uniforms.arc0.value = arc0; haloMat.uniforms.arc1.value = arc1; haloMat.uniforms.seal.value = seal;
       ring.visible = intensity > 0.0005;
     },
   };

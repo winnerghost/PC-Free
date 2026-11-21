@@ -218,7 +218,11 @@ export function buildHome(renderer, cfg) {
         float rip(float a){ if (a < 0.0 || a > 2.4) return 0.0; float d = length(vWPos.xy - kPos.xy);
           float r1 = 0.04 + a*2.8; float w = 0.012 + a*0.012;
           return exp(-pow((d-r1)/w,2.0)) * exp(-a*3.2) + exp(-d*d/0.0012)*exp(-a*18.0)*0.35; }`)
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += kCol * kAmt * (rip(kAge.x)+rip(kAge.y)+rip(kAge.z));');
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += kCol * kAmt * (rip(kAge.x)+rip(kAge.y)+rip(kAge.z));')
+      // the same glint cap as the unit (see device.js): a lamp can glint off a slat for one frame
+      .replace('#include <common>', '#include <common>\nuniform float specMax;')
+      .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\nreflectedLight.directSpecular = min(reflectedLight.directSpecular, vec3(specMax));');
+    sh.uniforms.specMax = dev.parts.specMax;
   };
   function leaf(width, dir) {
     const parts = [];
@@ -390,6 +394,9 @@ export function buildHome(renderer, cfg) {
   }
 
   const tmp = new THREE.Vector3();
+  // base colours of the world's surfaces, scaled by W so they fade in from black with the world
+  const baseCols = [gateMat, asphalt.material, curb.material, pole.material].map((m) => [m, m.color.clone()]);
+  let landscape = false;
   return {
     scene, dev, walker, lensW,
     anchors: {
@@ -400,6 +407,7 @@ export function buildHome(renderer, cfg) {
       walkerBox: [new THREE.Vector3(), new THREE.Vector3()],
     },
     shadowsDirty: true,
+    setLandscape(v) { landscape = v; },
     update(S, first) {
       const W = S.world;
       // sky & atmosphere
@@ -426,8 +434,14 @@ export function buildHome(renderer, cfg) {
       hemi.intensity = W * lerp(0.35, 0.7, day);
       // architecture lights (they fade out in daylight)
       const night = 1 - day;
-      for (const m of archMats) { m.color.setScalar(W); m.envMapIntensity = W; }
-      for (const m of [gateMat, groundMat, asphalt.material, curb.material, pole.material]) m.envMapIntensity = W;
+      // The world's materials carry the environment map themselves, so its strength can follow W.
+      // (three.js ignores envMapIntensity on materials that inherit scene.environment, which made
+      // the gate pop in fully lit by the studio reflections the moment it became visible.)
+      // With W = 1 this is exactly scene.environmentIntensity, so lit scenes look the same.
+      const envK = W * (S.env + day * 0.6);
+      for (const m of archMats) { m.color.setScalar(W); m.envMap = scene.environment; m.envMapIntensity = envK; }
+      for (const m of [gateMat, groundMat, asphalt.material, curb.material, pole.material]) { m.envMap = scene.environment; m.envMapIntensity = envK; }
+      for (const [m, c] of baseCols) m.color.copy(c).multiplyScalar(W);
       pillarMat.emissiveIntensity = 1.15 * S.lightPillar * night;
       wallMatL.emissiveIntensity = wallMatR.emissiveIntensity = 1.0 * S.lightWall * night;
       groundMat.color.setScalar(0.23 * W);
@@ -438,7 +452,7 @@ export function buildHome(renderer, cfg) {
       shafts.visible = S.gate > 0.01 && W > 0.01;
       interior.intensity = 70 * S.interior * lerp(1, 0.3, day) * (0.55 + 0.45 * S.gate);
       lamp.intensity = 60 * S.lightStreet * night;
-      lampHead.material.color.setRGB(3.2, 2.5, 1.7).multiplyScalar(S.lightStreet * night + 0.04);
+      lampHead.material.color.setRGB(3.2, 2.5, 1.7).multiplyScalar(S.lightStreet * night + 0.04 * W);
       for (const o of [ground, asphalt, curb, P1, P2, wallL, wallR, leafL, leafR, house, pole, arm, lampHead, ...archMeshes]) o.visible = W > 0.002;
       // only the lights that matter in this act are in the shaders (each light costs per pixel)
       const lit = W > 0.001;
@@ -447,10 +461,13 @@ export function buildHome(renderer, cfg) {
       rimL.visible = rimR.visible = key.visible = S.studio > 0.001;
       sun.castShadow = S.t > 19.6 && S.t < 26.6; interior.castShadow = lit;
       // product lighting
-      rimL.intensity = 2.0 * S.studio; rimR.intensity = 0.95 * S.studio; key.intensity = 0.8 * S.studio;
+      rimL.intensity = 2.0 * S.studio; rimR.intensity = 0.95 * S.studio * (landscape ? 1 : S.rimR); key.intensity = 0.8 * S.studio;
+      // the 16:9 camera sees the rounded edges from other angles, so there the glints are capped instead
+      const cap = landscape ? S.glintCap : 0;
+      dev.parts.specMax.value = cap > 0.001 ? 2.0 / cap : 1e6;
       scene.environmentIntensity = S.env + day * 0.6;
       // the device
-      dev.setRing(S.ring, S.arc0, S.arc1);
+      dev.setRing(S.ring, S.arc0, S.arc1, S.seal);
       dev.parts.statusMat.emissiveIntensity = 3 * S.status;
       // knocks
       rippleU.kAge.value.set(S.knocks[0], S.knocks[1], S.knocks[2]);

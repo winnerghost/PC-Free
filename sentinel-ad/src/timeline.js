@@ -31,6 +31,7 @@ export function state(t) {
     const p = E.inOut(clamp((t - 39.0) / 1.0));
     S.arc0 = lerp(-C, TAU - C, p); S.arc1 = lerp(TAU - C, TAU, p);
   } else { S.arc0 = 0; S.arc1 = TAU; }
+  S.seal = t < 2.1 ? 1 : 0; // the first close is head-first (see device.js)
   // ring brightness, with flashes on knocks and a beacon while we rise
   let ring = K(t, [[0, 1.0], [24.9, 1.0, E.inOut], [26.1, 2.6], [34.7, 2.6, E.inOut], [35.6, 1.0], [40, 1.0]]);
   for (const k of knockTimes) { const d = t - k; if (d >= 0 && d < 1.2) ring += 1.6 * Math.exp(-d * 7); }
@@ -38,6 +39,10 @@ export function state(t) {
   { const d = t - 20.8; if (d >= 0 && d < 1.5) ring += 1.2 * Math.exp(-d * 5); }
   S.ring = ring;
   S.status = 0.55 + 0.45 * Math.sin(t * TAU / 2.5);
+  // the right rim light dips while its highlight crosses the metal edge (it would bloom into a flash)
+  S.rimR = 1 - 0.88 * win(t, 4.75, 5.0, 5.35, 6.1);
+  // 16:9: cap the edge glints during the opening and closing product shots (eases off before the gate)
+  S.glintCap = Math.max(1 - ramp(t, 11.0, 12.5, E.inOut), ramp(t, 37.7, 38.2, E.inOut));
 
   // ── lighting ─────────────────────────────────────────────────────────
   // studio rim lights on the product (strong in product shots, softer at the gate)

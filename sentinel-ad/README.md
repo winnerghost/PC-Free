@@ -48,6 +48,7 @@ pip install numpy scipy                            # once
 ./render/build.sh 9x16       # just the vertical one
 ```
 
+- **Re-render part of it:** `node render/capture.mjs --w 1080 --h 1920 --from 0 --to 800 --out out/part/intro.mp4` renders frames 0–799 only. Every frame is a pure function of time, so a range can replace the same frames in a full render. Join them without re-encoding at a keyframe (ffmpeg `-c copy`). Give each concurrent render its own output folder.
 - **Picture:** `render/capture.mjs` drives headless Chromium. Every frame is rendered as 4 jittered, time-offset sub-frames and blended in HDR. That gives 4× anti-aliasing and real motion blur. Bloom, filmic tone mapping, a lens grade and a fine grain are applied after, and the result is encoded as H.264 at 60 fps.
 - **Sound:** `render/soundtrack.py` synthesises the score and every effect from scratch on the picture's timeline: the knocks, the gate motor and latch, the timelapse clock, the arcs, and the cloud uploads. It loops with no click and sits at about −14 LUFS for social platforms.
 

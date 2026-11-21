@@ -65,6 +65,7 @@ await document.fonts.ready;
 
 const home = buildHome(renderer, CFG);
 home.scene.environment = env;
+home.setLandscape(!portrait);
 const earth = buildEarth(renderer, CFG);
 earth.scene.environment = env;
 const camH = new THREE.PerspectiveCamera(30, W / H, 0.004, 900);
