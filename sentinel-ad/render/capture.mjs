@@ -29,12 +29,13 @@ const args = Object.fromEntries(
 );
 const W = +(args.w || 1080), H = +(args.h || 1920);
 const FPS = +(args.fps || 60);
-const SUB = +(args.sub || 4);           // sub-frames per frame (motion blur)
+const SUB = +(args.sub || 1);           // extra sub-frames blended by ffmpeg (the page does its own motion blur)
+const LAUNCH = { args: ['--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'] };
 const SHUTTER = +(args.shutter || 0.5); // 0.5 = 180° shutter
 const WORKERS = +(args.workers || 3);
 const CRF = +(args.crf || 20);
 
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.png': 'image/png', '.json': 'application/json' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.png': 'image/png', '.json': 'application/json' };
 const server = createServer(async (req, res) => {
   try {
     const p = path.join(ROOT, decodeURIComponent(new URL(req.url, 'http://x').pathname));
@@ -46,14 +47,14 @@ const server = createServer(async (req, res) => {
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const PORT = server.address().port;
-const PAGE = `http://127.0.0.1:${PORT}/index.html?render&w=${W}&h=${H}${args.query ? '&' + args.query : ''}`;
+const PAGE = `http://127.0.0.1:${PORT}/index.html?render&w=${W}&h=${H}&mb=${args.mb || 4}${args.query ? '&' + args.query : ''}`;
 
 async function openPage(browser) {
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   page.on('pageerror', (e) => console.error('[page error]', e.message));
   page.on('console', (m) => { if (m.type() === 'error') console.error('[console]', m.text()); });
   await page.goto(PAGE);
-  await page.waitForFunction(() => window.__ready === true, null, { timeout: 60000 });
+  await page.waitForFunction(() => window.__ready === true, null, { timeout: 240000 });
   const cdp = await page.context().newCDPSession(page);
   return { page, cdp };
 }
@@ -76,7 +77,7 @@ const write = (stream, buf) => new Promise((res, rej) => (stream.write(buf, (e) 
 if (args.stills) {
   const outdir = path.resolve(args.outdir || path.join(ROOT, 'out', 'stills'));
   await mkdir(outdir, { recursive: true });
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(LAUNCH);
   const { page, cdp } = await openPage(browser);
   for (const ts of String(args.stills).split(',')) {
     const t = +ts;
@@ -95,7 +96,7 @@ const out = path.resolve(args.out || path.join(ROOT, 'out', `sentinel_${W}x${H}.
 const tmp = path.join(path.dirname(out), `.chunks_${W}x${H}`);
 await rm(tmp, { recursive: true, force: true });
 await mkdir(tmp, { recursive: true });
-const browser0 = await chromium.launch();
+const browser0 = await chromium.launch(LAUNCH);
 const info = await (async () => { const { page } = await openPage(browser0); const i = await page.evaluate(() => window.__info); await page.close(); return i; })();
 await browser0.close();
 const DUR = +(args.duration || info.duration);
@@ -122,7 +123,7 @@ await Promise.all(ranges.map(async ([a, b], k) => {
     '-vf', vf, '-r', String(FPS), '-c:v', 'libx264', '-preset', 'slow', '-crf', String(CRF), '-tune', String(args.tune || 'grain'),
     '-x264-params', String(args.x264 || 'aq-mode=3:aq-strength=0.8:deblock=-1,-1'), '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709',
     '-pix_fmt', 'yuv420p', '-threads', '2', file]);
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(LAUNCH);
   const { page, cdp } = await openPage(browser);
   for (let f = a; f < b; f++) {
     for (let s = 0; s < SUB; s++) {

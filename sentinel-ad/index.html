@@ -3,13 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sentinel Ad</title>
+  <title>Sentinel Teaser</title>
   <link rel="stylesheet" href="src/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
 </head>
 <body>
   <div id="stage">
-    <canvas id="c"></canvas>
-    <div id="text"></div>
+    <div id="ui"></div>
   </div>
   <div id="bar">
     <button id="play" type="button">PAUSE</button>
@@ -18,9 +20,7 @@
   </div>
   <script src="src/config.js"></script>
   <script src="src/core.js"></script>
-  <script src="src/timeline.js"></script>
-  <script src="src/scene.js"></script>
-  <script src="src/text.js"></script>
-  <script src="src/main.js"></script>
+  <script src="src/data/land.js"></script>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>
