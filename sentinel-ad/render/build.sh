@@ -20,7 +20,7 @@ for f in $FORMATS; do
     *) echo "unknown format $f"; exit 1 ;;
   esac
   echo "▸ video $f (${W}x${H}, 60 fps, 4-sample motion blur)"
-  node render/capture.mjs --w $W --h $H --fps 60 --sub 4 --workers "$WORKERS" --crf 18 --out "out/video_$f.mp4"
+  node render/capture.mjs --w $W --h $H --fps 60 --sub 4 --workers "$WORKERS" --crf 20 --out "out/video_$f.mp4"
   echo "▸ mux $f"
   ffmpeg -v error -y -i "out/video_$f.mp4" -i out/soundtrack.wav -map 0:v -map 1:a \
     -c:v copy -c:a aac -b:a 256k -movflags +faststart -shortest "out/Sentinel_Ad_$f.mp4"

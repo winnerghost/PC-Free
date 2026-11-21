@@ -85,7 +85,22 @@
       const gR = rng(77);
       // grain particles are 2 px wide and the amplitude is low: enough to stop banding
       // in the dark gradients without the noise eating the video bitrate
-      this.grainAmp = +(new URLSearchParams(location.search).get('grain') || 1);
+      const qs = new URLSearchParams(location.search);
+      this.grainAmp = +(qs.get('grain') || 1);
+      this.ditherAmp = +(qs.get('dither') || 1);
+      // static 1 px dither: breaks up banding in the dark gradients, and because it never
+      // moves the encoder can reuse it from frame to frame almost for free
+      {
+        const d = mkCanvas(512, 512), dx = d.getContext('2d');
+        const id = dx.createImageData(512, 512);
+        const dR = rng(4242);
+        for (let i = 0; i < id.data.length; i += 4) {
+          const v = Math.floor(dR() * 6);
+          id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255;
+        }
+        dx.putImageData(id, 0, 0);
+        this.dither = this.ctx.createPattern(d, 'repeat');
+      }
       for (let k = 0; k < 4; k++) {
         const g = mkCanvas(256, 256), gx = g.getContext('2d');
         const id = gx.createImageData(256, 256);
@@ -1195,6 +1210,14 @@
         ctx.globalCompositeOperation = 'source-over';
       }
       ctx.drawImage(this.vig, 0, 0);
+      if (this.ditherAmp > 0) {
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = this.ditherAmp;
+        ctx.fillStyle = this.dither;
+        ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
       // grain: new pattern + offset every frame
       const k = Math.floor((frame >>> 0) / 3); // new grain 20 times a second
       ctx.globalCompositeOperation = 'screen';

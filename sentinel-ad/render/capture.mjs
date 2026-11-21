@@ -32,7 +32,7 @@ const FPS = +(args.fps || 60);
 const SUB = +(args.sub || 4);           // sub-frames per frame (motion blur)
 const SHUTTER = +(args.shutter || 0.5); // 0.5 = 180° shutter
 const WORKERS = +(args.workers || 3);
-const CRF = +(args.crf || 18);
+const CRF = +(args.crf || 20);
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.png': 'image/png', '.json': 'application/json' };
 const server = createServer(async (req, res) => {
@@ -119,8 +119,8 @@ await Promise.all(ranges.map(async ([a, b], k) => {
     ? `tmix=frames=${SUB},select='eq(mod(n\\,${SUB})\\,${SUB - 1})',setpts=N/(${FPS}*TB),format=yuv420p`
     : `setpts=N/(${FPS}*TB),format=yuv420p`;
   const ff = ffmpeg(['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'png', '-framerate', String(FPS * SUB), '-i', '-',
-    '-vf', vf, '-r', String(FPS), '-c:v', 'libx264', '-preset', 'slow', '-crf', String(CRF), '-tune', 'film',
-    '-x264-params', 'aq-mode=3:deblock=-1,-1', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709',
+    '-vf', vf, '-r', String(FPS), '-c:v', 'libx264', '-preset', 'slow', '-crf', String(CRF), '-tune', String(args.tune || 'grain'),
+    '-x264-params', String(args.x264 || 'aq-mode=3:aq-strength=0.8:deblock=-1,-1'), '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709',
     '-pix_fmt', 'yuv420p', '-threads', '2', file]);
   const browser = await chromium.launch();
   const { page, cdp } = await openPage(browser);
