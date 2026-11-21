@@ -60,7 +60,7 @@ Space pauses, the arrow keys scrub, and you can click the bar to jump.
 cd sentinel-ad
 npm install playwright && npx playwright install chromium   # once
 pip install numpy scipy                                       # once
-./render/build.sh            # both formats (about 20 min each on 4 cores)
+./render/build.sh            # both formats (about 12–20 min each on 4 cores)
 ./render/build.sh 9x16       # just the vertical one
 ```
 
