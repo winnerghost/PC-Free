@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>About · Iris Arden</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Profile, experience, toolkit and principles of Iris Arden, creative technologist in Lisbon.">
+<meta name="theme-color" content="#140a12">
+<meta property="og:title" content="About · Iris Arden">
+<meta property="og:description" content="Profile, experience, toolkit and principles of Iris Arden, creative technologist in Lisbon.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400..600&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600&family=Syne:wght@400..800&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>(function(){var d=document.documentElement;d.classList.add("js");try{var t=localStorage.getItem("ia-theme");if(t==="light"||t==="dark")d.setAttribute("data-theme",t);if(sessionStorage.getItem("ia-loaded"))d.classList.add("no-preload")}catch(e){}if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)d.classList.add("motion")})();</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<canvas id="iris-gl" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="preloader" aria-hidden="true">
+  <div class="preloader-inner">
+    <p class="label">Opening the aperture</p>
+    <p class="preloader-name"><span class="serif">Iris</span><span class="display">Arden</span></p>
+    <div class="preloader-bar"><i></i></div>
+    <p class="label preloader-count">000</p>
+  </div>
+</div>
+
+<header class="hud">
+  <a class="brand" href="index.html" data-magnetic="0.2" aria-label="Iris Arden, home">
+    <svg class="brand-mark" viewBox="0 0 30 30" fill="none" aria-hidden="true"><circle cx="15" cy="15" r="13.8" stroke="currentColor" stroke-width="1.1"/><path d="M20.69 13.09L27.73 20.33M20.04 18.26L18.77 28.27M15.59 20.97L6.97 26.23M10.70 19.19L1.22 15.72M9.05 14.25L5.84 4.68M11.88 9.88L17.36 1.40M17.06 9.36L27.10 8.37M17.06 9.36L20.69 13.09L20.04 18.26L15.59 20.97L10.70 19.19L9.05 14.25L11.88 9.88Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+    <span class="brand-name">Iris Arden<small>Creative technologist</small></span>
+  </a>
+  <nav class="nav" aria-label="Primary">
+    <a href="work.html" data-nav="work">Work</a>
+    <a href="about.html" data-nav="about">About</a>
+    <a href="lab.html" data-nav="lab">Lab</a>
+    <a href="contact.html" data-nav="contact">Contact</a>
+  </nav>
+  <div class="hud-meta">
+    <span class="clock" data-clock>LIS <b>--:--:--</b></span>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Switch theme" data-magnetic="0.3">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.4"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>
+    </button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu"><span>Menu</span><i aria-hidden="true"></i></button>
+  </div>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <nav class="menu-links" aria-label="Menu">
+    <a href="index.html" data-nav="home">Home <span>Index</span></a>
+    <a href="work.html" data-nav="work">Work <span>6 projects</span></a>
+    <a href="about.html" data-nav="about">About <span>Practice</span></a>
+    <a href="lab.html" data-nav="lab">Lab <span>4 experiments</span></a>
+    <a href="contact.html" data-nav="contact">Contact <span>Say hello</span></a>
+  </nav>
+  <div class="menu-foot">
+    <span class="label">studio@irisarden.example</span>
+    <span class="label" data-clock></span>
+  </div>
+</div>
+
+<main id="main" data-page="about">
+  <header class="page-head wrap">
+    <div class="about-hero">
+      <h1 data-split>I build interfaces that behave like <span class="serif">light</span>.</h1>
+      <figure class="portrait" data-reveal style="--d:200ms">
+        <div class="portrait-frame"><canvas class="interactive" role="img" aria-label="A self-portrait drawn as topographic contour lines, forming a head and shoulders."></canvas></div>
+        <figcaption class="label">Fig. 1 · Self-portrait as a contour map, drawn live. Move across it to disturb the field.</figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <section class="wrap" aria-label="Profile">
+    <div class="about-bio">
+      <p class="label" data-reveal>Profile</p>
+      <div class="prose" data-reveal style="--d:120ms">
+        <p>I’m a creative technologist and interaction designer based in Lisbon. For twelve years I’ve worked between design studios, research labs and engineering teams, usually in the gap where an idea needs both a designer’s eye and a working prototype.</p>
+        <p>Today I run a small independent practice and take on a handful of projects each year: brands launching something new, museums and observatories explaining something complex, and product teams that want their software to feel alive.</p>
+        <p>I design in the browser from the first week, write my own shaders and stay through launch, so what ships is what we designed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="exp-title">
+    <div class="section-head">
+      <p class="label" data-reveal>Experience</p>
+      <h2 id="exp-title" class="display" data-split>Twelve years, <span class="serif">four</span> studios</h2>
+    </div>
+    <ol class="timeline">
+      <li class="timeline-row" data-reveal><span class="label years">2023 — Now</span><h3>Independent practice<small class="label">Lisbon</small></h3><p>Creative technologist for brands, studios and cultural institutions, with clients across Europe, North America and Japan.</p></li>
+      <li class="timeline-row" data-reveal><span class="label years">2019 — 2023</span><h3>Lumen &amp; Field<small class="label">Copenhagen · Lead interaction designer</small></h3><p>Built the studio’s real-time graphics practice, from a single prototype to a team of six.</p></li>
+      <li class="timeline-row" data-reveal><span class="label years">2016 — 2019</span><h3>Parallax Research Lab<small class="label">Berlin · Prototyper</small></h3><p>Designed interfaces for experimental displays, spatial audio and gesture input.</p></li>
+      <li class="timeline-row" data-reveal><span class="label years">2014 — 2016</span><h3>Freelance<small class="label">Porto · Motion &amp; front-end</small></h3><p>Motion design and front-end development for agencies and independent publishers.</p></li>
+    </ol>
+  </section>
+
+  <section class="section wrap" aria-labelledby="toolkit-title">
+    <div class="section-head">
+      <p class="label" data-reveal>Toolkit</p>
+      <h2 id="toolkit-title" class="display" data-split>Tools I reach <span class="serif">for</span></h2>
+    </div>
+    <div class="toolkit">
+      <div class="constellation" data-reveal>
+        <canvas class="interactive" aria-hidden="true"></canvas>
+        <span class="label">Hover a star or a name to trace its links</span>
+      </div>
+      <div class="toolkit-lists" data-reveal style="--d:150ms">
+          <div><h3 class="label">Design</h3><ul><li data-skill="Figma" data-group="Design">Figma</li><li data-skill="Rive" data-group="Design">Rive</li><li data-skill="After Effects" data-group="Design">After Effects</li><li data-skill="Blender" data-group="Design">Blender</li><li data-skill="Design systems" data-group="Design">Design systems</li><li data-skill="Art direction" data-group="Design">Art direction</li></ul></div>
+          <div><h3 class="label">Code</h3><ul><li data-skill="TypeScript" data-group="Code">TypeScript</li><li data-skill="GLSL" data-group="Code">GLSL</li><li data-skill="Three.js" data-group="Code">Three.js</li><li data-skill="WebGPU" data-group="Code">WebGPU</li><li data-skill="React" data-group="Code">React</li><li data-skill="Astro" data-group="Code">Astro</li><li data-skill="Web Audio" data-group="Code">Web Audio</li></ul></div>
+          <div><h3 class="label">Practice</h3><ul><li data-skill="Prototyping" data-group="Practice">Prototyping</li><li data-skill="Motion systems" data-group="Practice">Motion systems</li><li data-skill="Generative art" data-group="Practice">Generative art</li><li data-skill="Performance" data-group="Practice">Performance</li><li data-skill="Accessibility" data-group="Practice">Accessibility</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="principles-title">
+    <div class="section-head">
+      <p class="label" data-reveal>Principles</p>
+      <h2 id="principles-title" class="display" data-split>Three rules I <span class="serif">keep</span></h2>
+    </div>
+    <div class="principles">
+      <article class="principle" data-tilt="6" data-reveal>
+        <svg class="principle-glyph" viewBox="0 0 56 56" fill="none" aria-hidden="true"><circle cx="28" cy="28" r="6" fill="currentColor"/><circle cx="28" cy="28" r="14" stroke="currentColor" stroke-opacity=".5"/><circle cx="28" cy="28" r="22" stroke="currentColor" stroke-opacity=".25"/></svg>
+        <h3>Light over noise</h3>
+        <p>Every effect has to earn its place by showing something. If an animation doesn’t help someone understand or feel the work, it goes.</p>
+      </article>
+      <article class="principle" data-tilt="6" data-reveal style="--d:120ms">
+        <svg class="principle-glyph" viewBox="0 0 56 56" fill="none" aria-hidden="true"><path d="M4 44C18 44 20 12 34 12s14 18 18 18" stroke="currentColor" stroke-width="1.4"/><circle cx="34" cy="12" r="4" fill="currentColor"/></svg>
+        <h3>Motion with meaning</h3>
+        <p>Things move the way they would in the world: with weight, momentum and a reason. Timing is designed, never left at a default.</p>
+      </article>
+      <article class="principle" data-tilt="6" data-reveal style="--d:240ms">
+        <svg class="principle-glyph" viewBox="0 0 56 56" fill="none" aria-hidden="true"><path d="M6 46h44" stroke="currentColor" stroke-opacity=".4"/><rect x="9" y="30" width="6" height="16" fill="currentColor" fill-opacity=".35"/><rect x="19" y="22" width="6" height="24" fill="currentColor" fill-opacity=".55"/><rect x="29" y="14" width="6" height="32" fill="currentColor" fill-opacity=".75"/><rect x="39" y="8" width="6" height="38" fill="currentColor"/></svg>
+        <h3>Built to sixty frames</h3>
+        <p>Performance is part of the design. I set a frame budget on day one and test on the oldest phone in the room.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="talks-title">
+    <div class="section-head">
+      <p class="label" data-reveal>Talks &amp; teaching</p>
+      <h2 id="talks-title" class="display" data-split>Sharing the <span class="serif">craft</span></h2>
+    </div>
+    <ul class="recognition">
+      <li data-reveal><span class="label">2025</span><span>Designing with shaders</span><span class="label">Conference talk</span></li>
+      <li data-reveal><span class="label">2024</span><span>Motion systems for product teams</span><span class="label">Workshop series</span></li>
+      <li data-reveal><span class="label">2023</span><span>The physics of a good transition</span><span class="label">Essay</span></li>
+      <li data-reveal><span class="label">2022 — 2024</span><span>Interaction design studio</span><span class="label">Guest lecturer</span></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-cta">
+      <p class="label" data-reveal>Have a project in mind?</p>
+      <h2 data-split>Let’s make something <span class="serif">luminous</span>.</h2>
+      <div class="cta-row" data-reveal style="--d:200ms">
+        <a class="btn" href="contact.html" data-magnetic="0.25" data-dilate="1.45"><span>Start a project</span><svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.4"/></svg></a>
+        <button class="link-line label" type="button" data-copy-email-global>studio@irisarden.example <svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 10.5V3.5A1 1 0 0 1 4 2.5h6.5" stroke="currentColor" stroke-width="1.3"/></svg></button>
+      </div>
+    </div>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <p class="label">Index</p>
+        <a href="index.html">Home</a>
+        <a href="work.html">Work</a>
+        <a href="about.html">About</a>
+        <a href="lab.html">Lab</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <p class="label">Elsewhere</p>
+        <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.are.na/" target="_blank" rel="noopener">Are.na</a>
+      </div>
+      <div class="footer-col">
+        <p class="label">Studio</p>
+        <p>Lisbon, Portugal<br>38.72° N, 9.14° W</p>
+        <p class="label" data-clock></p>
+      </div>
+      <div class="footer-col">
+        <p class="label">Status</p>
+        <p class="status"><span class="dot-live" aria-hidden="true"></span>Booking from January 2027</p>
+        <button class="link-line label" type="button" data-to-top>Back to top ↑</button>
+      </div>
+    </div>
+    <p class="footer-word" aria-hidden="true">Iris Arden</p>
+    <div class="footer-base">
+      <span class="label">© 2026 Iris Arden</span>
+      <span class="label">Designed and built by hand. Every visual on this site is drawn live in your browser.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="fmeter" aria-hidden="true"><canvas></canvas><span><b>f/1.4</b></span></div>
+
+<script src="assets/js/lib.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/gl.js"></script>
+<script src="assets/js/art.js"></script>
+<script src="assets/js/pages.js"></script>
+<script src="assets/js/lab.js"></script>
+<script src="assets/js/core.js"></script>
+</body>
+</html>
