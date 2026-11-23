@@ -1,4 +1,4 @@
-/* IRIS ARDEN — lab.js
+/* SYED ARHAM ASHRAF — lab.js
    Four live experiments. Each one only runs while it is on screen. */
 (function () {
   "use strict";
@@ -28,7 +28,7 @@
   function fieldType(card, scope) {
     const canvas = $("canvas", card);
     const ptr = pointer(canvas, scope);
-    const words = ["LUMEN", "IRIS", "FOCUS", "f/1.4"];
+    const words = ["ARHAM", "IDEAS", "BUILD", "QLIVE"];
     let wi = 0, parts = [], w = 0, h = 0, dpr = 1;
     const sample = (word) => {
       const off = document.createElement("canvas");

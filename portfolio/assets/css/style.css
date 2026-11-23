@@ -1,6 +1,7 @@
 /* ==========================================================================
-   IRIS ARDEN — Portfolio
-   Identity: "Lacquer & Opal". A mulberry-lacquer darkroom lit by an opal iris.
+   SYED ARHAM ASHRAF — Portfolio
+   Identity: "Lacquer & Opal". A mulberry-lacquer darkroom lit by an opal iris:
+   the iris stands for vision, a founder's eye for opportunities.
    Layout concept: an observatory of light. One fixed, living iris sits behind
    every page; content sits on a wide 12-column field with mono metadata rails.
    ========================================================================== */
@@ -779,12 +780,12 @@ html:not(.js) .preloader { display: none; }
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
-  padding: 0.04em 0.06em 0.12em;
-  margin: -0.04em -0.06em -0.12em;
+  padding: 0.04em 0.08em 0.26em;
+  margin: -0.04em -0.08em -0.26em;
 }
 .wi { display: inline-block; will-change: transform; }
 html.js.motion [data-split] .wi {
-  transform: translateY(110%) rotate(3deg);
+  transform: translateY(135%) rotate(3deg);
   transition: transform 1.15s var(--ease-out);
   transition-delay: calc(var(--d, 0ms) + var(--i, 0) * 38ms);
 }
@@ -841,6 +842,7 @@ html.js.motion [data-reveal="line"].is-in { transform: none; }
   position: relative;
   min-height: 100svh;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr auto;
   padding-top: calc(96px + env(safe-area-inset-top, 0px));
   padding-bottom: clamp(16px, 2.5vw, 32px);
@@ -881,10 +883,10 @@ html.js.motion [data-reveal="line"].is-in { transform: none; }
 .hero-bottom { display: grid; gap: clamp(10px, 1.5vw, 20px); }
 .hero-name {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-  font-size: var(--step-5);
-  line-height: 0.8;
+  gap: 0.2em;
+  font-size: clamp(3.4rem, 8.6vw, 11rem);
+  line-height: 0.82;
   letter-spacing: -0.045em;
   white-space: nowrap;
 }
@@ -1157,14 +1159,15 @@ html.js.motion [data-reveal="line"].is-in { transform: none; }
   margin-top: 28px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(3rem, 13vw, 16rem);
-  letter-spacing: -0.06em;
-  line-height: 0.78;
+  font-size: clamp(2rem, 7.4vw, 12rem);
+  letter-spacing: -0.05em;
+  line-height: 0.9;
   white-space: nowrap;
   color: transparent;
   -webkit-text-stroke: 1px var(--line-strong);
   user-select: none;
-  text-align: center;
+  width: max-content;
+  max-width: none;
 }
 html[data-current="contact"] .footer-cta { display: none; }
 html[data-current="contact"] .footer-grid { margin-top: 0; }
@@ -1359,7 +1362,7 @@ html[data-current="contact"] .footer-grid { margin-top: 0; }
 }
 .p-meta {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 24px;
   padding: 28px 0;
   border-bottom: 1px solid var(--line);
@@ -1394,54 +1397,70 @@ html[data-current="contact"] .footer-grid { margin-top: 0; }
 .p-steps { display: grid; gap: 0; border-top: 1px solid var(--line); }
 .p-step {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 200px minmax(0, 1fr);
   gap: 24px;
   padding: 26px 0;
   border-bottom: 1px solid var(--line);
+  align-items: baseline;
 }
-.p-step h3 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); margin-bottom: 6px; letter-spacing: -0.02em; }
-.p-step p { color: var(--fg-2); max-width: 60ch; }
-.p-results {
+.p-step p { color: var(--fg-2); max-width: 60ch; font-size: var(--step-1); }
+.p-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
 }
-.p-result { display: grid; gap: 10px; padding-top: 20px; border-top: 1px solid var(--line-strong); }
-.p-result b {
+.p-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--step-4);
-  letter-spacing: -0.05em;
-  line-height: 0.9;
-  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  font-size: var(--step-1);
+  letter-spacing: -0.02em;
 }
-.p-result span { color: var(--fg-2); max-width: 26ch; }
-.p-gallery {
+.p-list li:nth-child(odd) { padding-right: 24px; }
+.p-list li::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  flex: none;
+  background: var(--opal);
+  clip-path: polygon(50% 0%, 90% 20%, 100% 60%, 75% 100%, 25% 100%, 0% 60%, 10% 20%);
+}
+.p-block > .p-block-body.p-visit { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+
+/* About: then / now / next, with the map */
+.journey {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: clamp(16px, 2vw, 28px);
-  padding-top: clamp(64px, 9vw, 140px);
+  gap: 24px;
+  align-items: start;
 }
-.p-shot {
+.journey-list { grid-column: 1 / span 5; display: grid; border-top: 1px solid var(--line); }
+.journey-list li {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+}
+.journey-list p { color: var(--fg-2); }
+.journey-list strong { color: var(--fg); font-weight: 600; }
+.journey-map {
+  grid-column: 7 / span 6;
   position: relative;
+  aspect-ratio: 4 / 3;
+  max-width: 100%;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
-  background: var(--bg-3);
+  background: color-mix(in srgb, var(--bg-2) 85%, transparent);
 }
-.p-shot canvas { width: 100%; height: 100%; display: block; }
-.p-shot:nth-child(1) { grid-column: 1 / span 7; aspect-ratio: 4 / 5; }
-.p-shot:nth-child(2) { grid-column: 8 / span 5; aspect-ratio: 4 / 5; align-self: end; }
-.p-shot:nth-child(3) { grid-column: 1 / -1; aspect-ratio: 21 / 9; }
-.p-shot figcaption {
-  position: absolute;
-  left: 16px;
-  bottom: 14px;
-  color: #f4ede7;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
-}
-.p-credits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
-.p-credits div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.p-credits dt { color: var(--fg-2); }
+.journey-map canvas { width: 100%; height: 100%; }
+h1[tabindex="-1"]:focus { outline: none; }
 .p-next {
   position: relative;
   display: grid;
@@ -1454,9 +1473,11 @@ html[data-current="contact"] .footer-grid { margin-top: 0; }
 .p-next-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: var(--step-5);
+  font-size: clamp(2.6rem, 9.5vw, 11rem);
   letter-spacing: -0.055em;
   line-height: 0.85;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   transition: letter-spacing 1s var(--ease-out), transform 1s var(--ease-out);
 }
 .p-next:hover .p-next-title { letter-spacing: -0.035em; transform: translateX(1vw); }
@@ -1593,17 +1614,6 @@ html[data-current="contact"] .footer-grid { margin-top: 0; }
 .principle p { color: var(--fg-2); }
 .principle-glyph { width: 56px; height: 56px; }
 
-.recognition { display: grid; }
-.recognition li {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr) auto;
-  gap: 24px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--line);
-  align-items: baseline;
-}
-.recognition li:first-child { border-top: 1px solid var(--line); }
-.recognition span:nth-child(2) { font-size: var(--step-1); }
 
 /* ==========================================================================
    LAB
@@ -1713,6 +1723,14 @@ input[type="range"]::-moz-range-thumb {
   padding-top: clamp(48px, 7vw, 96px);
 }
 .contact-aside { grid-column: 1 / span 4; display: grid; gap: 36px; align-content: start; }
+/* with no email or form service configured, the details take the full width */
+@media (min-width: 861px) {
+  .contact-grid:has(.contact-form-wrap[hidden]) .contact-aside {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px clamp(24px, 4vw, 64px);
+  }
+}
 .contact-form-wrap { grid-column: 6 / span 7; }
 .email-card {
   display: grid;
@@ -1873,6 +1891,8 @@ input[type="range"]::-moz-range-thumb {
   .portrait { grid-column: 1 / span 6; }
   .about-bio .prose { grid-column: 1 / -1; }
   .about-bio > .label { grid-column: 1 / -1; }
+  .journey-list,
+  .journey-map { grid-column: 1 / -1; }
   .constellation,
   .toolkit-lists { grid-column: 1 / -1; }
   .toolkit-lists { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1909,15 +1929,14 @@ input[type="range"]::-moz-range-thumb {
   .card { grid-column: 1 / -1; }
   .card.is-offset { margin-top: 0; }
   .p-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .p-results { grid-template-columns: 1fr; }
-  .p-shot:nth-child(n) { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
-  .p-credits { grid-template-columns: 1fr; }
+  .p-step { grid-template-columns: 1fr; gap: 8px; }
+  .p-list { grid-template-columns: 1fr; }
+  .p-list li:nth-child(odd) { padding-right: 0; }
   .p-next-cover { display: none; }
   .timeline-row { grid-template-columns: 1fr; gap: 8px; }
   .toolkit-lists { grid-template-columns: 1fr; }
   .principles { grid-template-columns: 1fr; }
   .principle { min-height: 0; }
-  .recognition li { grid-template-columns: 1fr; gap: 4px; }
   .exp { grid-column: 1 / -1; }
   .exp--wide .exp-stage { aspect-ratio: 4 / 3; }
   .contact-aside { grid-template-columns: 1fr; }
@@ -1935,14 +1954,14 @@ input[type="range"]::-moz-range-thumb {
 }
 
 @media (max-width: 520px) {
-  .hero-name { flex-direction: column; align-items: flex-start; gap: 0.06em; font-size: clamp(4.6rem, 27vw, 9rem); }
-  .hero-name .display { align-self: flex-end; }
+  .hero-name { flex-direction: column; align-items: flex-start; gap: 0.04em; font-size: clamp(3.2rem, 19vw, 7rem); line-height: 0.88; white-space: normal; }
   .footer-col { grid-column: 1 / -1; }
   .btn { --h: 52px; padding: 0 20px 0 22px; }
   .range { grid-template-columns: auto minmax(0, 1fr) auto; width: 100%; }
   .fmeter { display: none; }
   .brand-name small { display: none; }
   .hero-coords { display: none; }
+  .page-title { font-size: clamp(2.8rem, 16vw, 6rem); }
 }
 
 /* ---------- Reduced motion ---------- */

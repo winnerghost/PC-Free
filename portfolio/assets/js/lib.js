@@ -1,4 +1,4 @@
-/* IRIS ARDEN — lib.js
+/* SYED ARHAM ASHRAF — lib.js
    Small, dependency-free toolkit shared by every module:
    math, easing, a single rAF ticker, tweens, text splitting, seeded noise. */
 (function () {

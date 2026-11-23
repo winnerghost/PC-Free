@@ -1,4 +1,4 @@
-/* IRIS ARDEN — art.js
+/* SYED ARHAM ASHRAF — art.js
    1. drawAperture(): the iris diaphragm used by page transitions, the f-stop
       meter, the process panels and the Lab.
    2. Generative project covers. Every project draws its own artwork from a
@@ -120,8 +120,244 @@
     }
   }
 
+  const rr = (ctx, x, y, w, h, r) => {
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+    else ctx.rect(x, y, w, h);
+  };
+
   const styles = {
-    /* Halden — orbits around a lit planet */
+    /* QLive — numbered tokens flowing into a live "now serving" gate */
+    queue(ctx, w, h, r, P, t, k) {
+      bgGradient(ctx, w, h, P[1], P[0], 0.72, 0.45);
+      const S = Math.min(w, h);
+      ctx.strokeStyle = "rgba(244,237,231,0.045)";
+      ctx.lineWidth = k;
+      const g = S * 0.08;
+      ctx.beginPath();
+      for (let x = (w % g) / 2; x < w; x += g) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = (h % g) / 2; y < h; y += g) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+
+      const gx = w * 0.72, gy = h * 0.5, gr = S * 0.17;
+      const n = 20, speed = 0.06;
+      const K = t * speed * n;
+      const c2 = rgb(P[2]), c3 = rgb(P[3]), c4 = rgb(P[4]);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let i = 0; i < n; i++) {
+        const raw = i / n + t * speed;
+        const u = raw % 1;
+        const num = Math.floor(raw) * n - i + 100 + n;
+        const x = IA.lerp(-w * 0.06, gx - gr * 1.1, u);
+        const y = gy + Math.sin(u * 5.2 + 1.1) * h * 0.24 * (1 - u);
+        const s = IA.lerp(0.5, 1, u);
+        const a = IA.clamp(u * 1.6) * (u > 0.94 ? 1 - (u - 0.94) / 0.06 : 1);
+        const col = IA.mixRgb(c3, c2, u);
+        const pw = 64 * k * s, ph = 28 * k * s;
+        rr(ctx, x - pw / 2, y - ph / 2, pw, ph, ph / 2);
+        ctx.fillStyle = IA.rgba(col, 0.14 * a);
+        ctx.fill();
+        ctx.strokeStyle = IA.rgba(col, 0.8 * a);
+        ctx.lineWidth = k;
+        ctx.stroke();
+        ctx.font = `500 ${(12 * k * s).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
+        ctx.fillStyle = IA.rgba(c4, 0.9 * a);
+        ctx.fillText("A" + String(num).padStart(3, "0"), x, y + 0.5 * k);
+      }
+      // the gate
+      const glow = ctx.createRadialGradient(gx, gy, gr * 0.6, gx, gy, gr * 2.2);
+      glow.addColorStop(0, IA.rgba(c2, 0.22));
+      glow.addColorStop(1, IA.rgba(c2, 0));
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 4; i++) {
+        const pulse = ((t * 0.5 + i / 4) % 1);
+        ctx.beginPath();
+        ctx.arc(gx, gy, gr * (1 + pulse * 0.6), 0, TAU);
+        ctx.strokeStyle = IA.rgba(c2, 0.35 * (1 - pulse));
+        ctx.lineWidth = k;
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(gx, gy, gr, 0, TAU);
+      ctx.fillStyle = IA.rgba(rgb(P[0]), 0.85);
+      ctx.fill();
+      ctx.strokeStyle = IA.rgba(c2, 0.95);
+      ctx.lineWidth = 1.6 * k;
+      ctx.stroke();
+      ctx.fillStyle = IA.rgba(c4, 0.6);
+      ctx.font = `500 ${(9.5 * k).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
+      ctx.fillText("NOW SERVING", gx, gy - gr * 0.42);
+      ctx.fillStyle = IA.rgba(c2, 1);
+      ctx.font = `700 ${(gr * 0.52).toFixed(1)}px Syne, "Arial Black", sans-serif`;
+      ctx.fillText("A" + String(Math.floor(K) + 100).padStart(3, "0"), gx, gy + gr * 0.08);
+      vignette(ctx, w, h, 0.45);
+    },
+
+    /* Nexora — a local business grid coming online from a tap of a card */
+    signal(ctx, w, h, r, P, t, k) {
+      bgGradient(ctx, w, h, P[1], P[0], 0.3, 0.75);
+      const S = Math.min(w, h);
+      const cx = w * 0.6, cy = h * 0.45, a = -0.52;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const toC = (x, y) => [cx + x * ca - y * sa, cy + x * sa + y * ca];
+      const cell = S * 0.1, N = 9;
+      ctx.strokeStyle = "rgba(244,237,231,0.07)";
+      ctx.lineWidth = k;
+      ctx.beginPath();
+      for (let i = -N; i <= N; i++) {
+        let p = toC(i * cell, -N * cell), q = toC(i * cell, N * cell);
+        ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]);
+        p = toC(-N * cell, i * cell); q = toC(N * cell, i * cell);
+        ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]);
+      }
+      ctx.stroke();
+      const c2 = rgb(P[2]), c3 = rgb(P[3]), c4 = rgb(P[4]);
+      const lit = [];
+      for (let i = -N; i < N; i++) {
+        for (let j = -N; j < N; j++) {
+          const v = r();
+          if (v > 0.42) continue;
+          const [x, y] = toC((i + 0.5) * cell, (j + 0.5) * cell);
+          if (x < -cell || x > w + cell || y < -cell || y > h + cell) continue;
+          const on = v < 0.1;
+          const s = cell * (on ? 0.34 : 0.26);
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(a);
+          rr(ctx, -s / 2, -s / 2, s, s, s * 0.2);
+          if (on) {
+            const pulse = 0.6 + 0.4 * Math.sin(t * 2 + i * 1.3 + j);
+            ctx.fillStyle = IA.rgba(c2, 0.85 * pulse);
+            ctx.shadowColor = IA.rgba(c2, 0.9);
+            ctx.shadowBlur = 16 * k;
+            lit.push([x, y]);
+          } else {
+            ctx.fillStyle = "rgba(244,237,231,0.07)";
+          }
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+      // the card, with NFC waves
+      const kx = w * 0.2, ky = h * 0.74, cw = S * 0.34, ch = cw * 0.62;
+      ctx.save();
+      ctx.setLineDash([3 * k, 7 * k]);
+      ctx.lineDashOffset = -t * 30 * k;
+      lit.slice(0, 9).forEach(([x, y], i) => {
+        ctx.strokeStyle = IA.rgba(IA.mixRgb(c3, c2, i / 9), 0.35);
+        ctx.lineWidth = k;
+        ctx.beginPath();
+        ctx.moveTo(kx + cw * 0.5, ky - ch * 0.1);
+        ctx.quadraticCurveTo((kx + x) / 2, Math.min(ky, y) - S * 0.1, x, y);
+        ctx.stroke();
+      });
+      ctx.restore();
+      ctx.save();
+      ctx.translate(kx, ky);
+      ctx.rotate(-0.14);
+      const cg = ctx.createLinearGradient(-cw / 2, -ch / 2, cw / 2, ch / 2);
+      cg.addColorStop(0, IA.rgba(c3, 0.5));
+      cg.addColorStop(1, IA.rgba(c2, 0.28));
+      rr(ctx, -cw / 2, -ch / 2, cw, ch, ch * 0.12);
+      ctx.fillStyle = cg;
+      ctx.fill();
+      ctx.strokeStyle = IA.rgba(c4, 0.45);
+      ctx.lineWidth = k;
+      ctx.stroke();
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.arc(cw * 0.12, 0, ch * (0.16 + i * 0.13), -0.8, 0.8);
+        ctx.strokeStyle = IA.rgba(c4, 0.8 - i * 0.2 + 0.2 * Math.sin(t * 3 - i));
+        ctx.lineWidth = 1.6 * k;
+        ctx.stroke();
+      }
+      ctx.restore();
+      vignette(ctx, w, h, 0.5);
+    },
+
+    /* Dead Air — a corridor on a dead channel */
+    static(ctx, w, h, r, P, t, k, live) {
+      ctx.fillStyle = P[0];
+      ctx.fillRect(0, 0, w, h);
+      const vx = w * 0.5, vy = h * 0.47;
+      const dw = Math.min(w, h) * 0.13, dh = dw * 1.9;
+      const dx = vx - dw / 2, dy = vy - dh * 0.42;
+      const flick = 0.72 + 0.18 * Math.sin(t * 11.3) * Math.sin(t * 3.7) + (Math.sin(t * 0.9) > 0.96 ? -0.4 : 0);
+      // walls, floor and ceiling meeting the doorway
+      const wall = (pts, a, b) => {
+        const g = ctx.createLinearGradient(pts[0][0], pts[0][1], pts[1][0], pts[1][1]);
+        g.addColorStop(0, a);
+        g.addColorStop(1, b);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+        ctx.closePath();
+        ctx.fill();
+      };
+      wall([[0, 0], [dx, dy], [dx, dy + dh], [0, h]], "#050505", P[1]);
+      wall([[w, 0], [dx + dw, dy], [dx + dw, dy + dh], [w, h]], "#050505", P[1]);
+      wall([[0, h], [dx, dy + dh], [dx + dw, dy + dh], [w, h]], "#0c0b0b", "#1d1a19");
+      ctx.strokeStyle = "rgba(233,228,220,0.05)";
+      ctx.lineWidth = k;
+      ctx.beginPath();
+      for (let i = 0; i <= 10; i++) {
+        const x = (i / 10) * w;
+        ctx.moveTo(x, h);
+        ctx.lineTo(dx + (i / 10) * dw, dy + dh);
+      }
+      for (let i = 1; i < 7; i++) {
+        const u = Math.pow(i / 7, 2.2);
+        ctx.moveTo(IA.lerp(dx, 0, u), IA.lerp(dy + dh, h, u));
+        ctx.lineTo(IA.lerp(dx + dw, w, u), IA.lerp(dy + dh, h, u));
+      }
+      ctx.stroke();
+      // doorway light and a figure standing in it
+      const c3 = rgb(P[3]);
+      const bloom = ctx.createRadialGradient(vx, vy, 0, vx, vy, dh * 1.6);
+      bloom.addColorStop(0, IA.rgba(c3, 0.3 * flick));
+      bloom.addColorStop(1, IA.rgba(c3, 0));
+      ctx.fillStyle = bloom;
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = IA.rgba(c3, 0.75 * flick);
+      ctx.fillRect(dx, dy, dw, dh);
+      ctx.fillStyle = "rgba(5,5,5,0.92)";
+      const fx = vx + dw * 0.08, fh = dh * 0.62, fy = dy + dh - fh;
+      ctx.beginPath();
+      ctx.ellipse(fx, fy + fh * 0.09, fh * 0.07, fh * 0.085, 0, 0, TAU);
+      ctx.fill();
+      rr(ctx, fx - fh * 0.11, fy + fh * 0.18, fh * 0.22, fh * 0.82, fh * 0.05);
+      ctx.fill();
+      // emergency light
+      const red = ctx.createRadialGradient(w * 0.12, h * 0.05, 0, w * 0.12, h * 0.05, Math.max(w, h) * 0.6);
+      red.addColorStop(0, IA.rgba(rgb(P[2]), 0.38 * (0.6 + 0.4 * Math.sin(t * 2.2))));
+      red.addColorStop(1, IA.rgba(rgb(P[2]), 0));
+      ctx.fillStyle = red;
+      ctx.fillRect(0, 0, w, h);
+      // scanlines and static
+      ctx.fillStyle = "rgba(0,0,0,0.22)";
+      for (let y = 0; y < h; y += 3 * k) ctx.fillRect(0, y, w, k);
+      const rnd = live ? Math.random : r;
+      const dots = Math.floor((w * h) / 70);
+      for (let i = 0; i < dots; i++) {
+        const v = rnd();
+        ctx.fillStyle = `rgba(233,228,220,${v * 0.12})`;
+        ctx.fillRect(rnd() * w, rnd() * h, k, k);
+      }
+      // one torn line of signal
+      const band = h * 0.035;
+      const gy = h * (0.2 + 0.6 * (((Math.sin(t * 1.3) * 43758.5453) % 1 + 1) % 1));
+      try { ctx.drawImage(ctx.canvas, 0, gy, w, band, (Math.sin(t * 9) * 0.04 + 0.02) * w, gy, w, band); } catch (e) { /* ignore */ }
+      ctx.fillStyle = IA.rgba(rgb(P[4]), 0.7);
+      ctx.font = `500 ${(11 * k).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText("CH 00  ·  DEAD AIR", Math.max(22 * k, w * 0.08), Math.max(20 * k, h * 0.1));
+      vignette(ctx, w, h, 0.7);
+    },
+
+    /* orbits around a lit planet */
     orbits(ctx, w, h, r, P, t, k) {
       bgGradient(ctx, w, h, P[1], P[0], 0.68, 0.3);
       const S = Math.min(w, h);
@@ -185,7 +421,7 @@
       vignette(ctx, w, h, 0.5);
     },
 
-    /* Ophira — folds of silk light */
+    /* folds of silk light (Nuviistudios) */
     silk(ctx, w, h, r, P, t, k, live) {
       const g = ctx.createLinearGradient(0, 0, w, h);
       g.addColorStop(0, P[0]);
@@ -223,7 +459,7 @@
       vignette(ctx, w, h, 0.45);
     },
 
-    /* Northlight — rings that listen */
+    /* rings that listen */
     rings(ctx, w, h, r, P, t, k, live, seed) {
       bgGradient(ctx, w, h, P[1], P[0], 0.5, 0.5);
       const noise = IA.makeNoise(seed);
@@ -269,7 +505,7 @@
       vignette(ctx, w, h, 0.4);
     },
 
-    /* Tessellate — glass tiles, a motion grid */
+    /* glass tiles, a motion grid */
     tiles(ctx, w, h, r, P, t, k) {
       ctx.fillStyle = P[0];
       ctx.fillRect(0, 0, w, h);
@@ -321,7 +557,7 @@
       vignette(ctx, w, h, 0.55);
     },
 
-    /* Atlas of Tides — currents traced by particles */
+    /* currents traced by particles */
     flow(ctx, w, h, r, P, t, k, live, seed) {
       const g = ctx.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0, P[0]);
@@ -356,7 +592,7 @@
       vignette(ctx, w, h, 0.5);
     },
 
-    /* Kintsu — a mended bowl seen from above */
+    /* a mended bowl seen from above */
     cracks(ctx, w, h, r, P, t, k) {
       bgGradient(ctx, w, h, P[1], P[0], 0.45, 0.35);
       const S = Math.min(w, h);

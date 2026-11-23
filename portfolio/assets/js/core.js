@@ -1,4 +1,4 @@
-/* IRIS ARDEN — core.js
+/* SYED ARHAM ASHRAF — core.js
    Site-wide systems: theme, smooth scroll, cursor, aperture transitions,
    a fetch-based router (pages swap without a reload, so the iris keeps living
    between them), the preloader and the HUD. */
@@ -380,7 +380,7 @@
       });
     },
     setActive(name) {
-      const map = { project: "work" };
+      const map = { venture: "ventures" };
       const key = map[name] || name;
       $$("[data-nav]").forEach((a) => {
         if (a.dataset.nav === key) a.setAttribute("aria-current", "page");
@@ -503,7 +503,47 @@
     });
   };
 
+  /* scale a line of type so it exactly fills its container's width */
+  function fitText(el) {
+    if (!el.offsetParent) return;
+    const max = parseFloat(el.dataset.fitMax || "999");
+    if (window.innerWidth <= (parseFloat(el.dataset.fitMin) || 0)) { el.style.fontSize = ""; return; }
+    const avail = el.parentElement.clientWidth - parseFloat(getComputedStyle(el.parentElement).paddingLeft) - parseFloat(getComputedStyle(el.parentElement).paddingRight);
+    el.style.fontSize = "100px";
+    el.style.width = "max-content";
+    const wNow = el.getBoundingClientRect().width;
+    el.style.width = "";
+    if (wNow > 0) el.style.fontSize = Math.min(max, (100 * avail) / wNow) + "px";
+  }
+  IA.fitAll = (root = document) => IA.$$("[data-fit]", root).forEach(fitText);
+  window.addEventListener("resize", () => IA.fitAll());
+  if (document.fonts) document.fonts.ready.then(() => { IA.fitAll(); scroll.measure(); });
+
+  /* site-wide settings from data.js: email, profiles */
+  function applySite(root) {
+    const s = IA.site;
+    IA.$$("[data-needs-email]", root).forEach((el) => (el.hidden = !s.email));
+    IA.$$("[data-email]", root).forEach((el) => (el.textContent = s.email));
+    IA.$$("[data-socials]", root).forEach((el) => {
+      if (el.dataset.done) return;
+      el.dataset.done = "1";
+      const tpl = el.dataset.socials;
+      (s.socials || []).forEach((p) => {
+        const a = document.createElement("a");
+        a.href = p.href;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.innerHTML = tpl === "rich"
+          ? `${IA.esc(p.label)} <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" stroke-width="1.4"/></svg>`
+          : IA.esc(p.label);
+        el.appendChild(a);
+      });
+    });
+  }
+
   function shared(main, scope) {
+    applySite(main);
+    IA.fitAll(main);
     IA.observeReveals(main, scope);
 
     // parallax: element moves relative to its parent's position in the viewport
@@ -609,7 +649,7 @@
   /* ================================================================
      Router: fetch the next page, swap <main>, keep everything else alive
      ================================================================ */
-  const NAMES = { "": "Home", "index.html": "Home", "work.html": "Work", "about.html": "About", "lab.html": "Lab", "contact.html": "Contact", "project.html": "Project" };
+  const NAMES = { "": "Home", "index.html": "Home", "ventures.html": "Ventures", "about.html": "About", "lab.html": "Lab", "contact.html": "Contact", "venture.html": "Venture" };
   const router = {
     cache: new Map(),
     busy: false,
@@ -646,7 +686,7 @@
       if (!a || !this.internal(a)) return;
       const url = new URL(a.href, location.href);
       const samePath = url.pathname === location.pathname && url.search === location.search;
-      if (samePath && url.hash && !(current && current.name === "project" && url.hash !== location.hash)) {
+      if (samePath && url.hash && !(current && current.name === "venture" && url.hash !== location.hash)) {
         const id = decodeURIComponent(url.hash.slice(1));
         const target = id && document.getElementById(id);
         if (target) {
@@ -657,7 +697,7 @@
         }
         return;
       }
-      if (samePath && !url.hash && current && current.name !== "project") { e.preventDefault(); scroll.to(0); menu.close(); return; }
+      if (samePath && !url.hash && current && current.name !== "venture") { e.preventDefault(); scroll.to(0); menu.close(); return; }
       if (url.protocol === "file:") return; // fetch is not allowed from file://, use a normal load
       e.preventDefault();
       this.go(url.href, { label: a.dataset.label, kicker: a.dataset.kicker });
@@ -673,11 +713,11 @@
     },
     labelFor(url) {
       const file = url.pathname.split("/").pop();
-      if (file === "project.html") {
+      if (file === "venture.html") {
         const p = IA.project(decodeURIComponent(url.hash.slice(1))) || IA.projects[0];
-        return [p.title, p.client];
+        return [p.title, p.kind];
       }
-      return [NAMES[file] || "Iris Arden", "Next"];
+      return [NAMES[file] || IA.site.name, "Next"];
     },
     async go(href, { push = true, label, kicker } = {}) {
       if (this.busy) return;
@@ -772,7 +812,8 @@
     IA.ticker.add(() => applyIris(), 5);
     IA.routeHash = location.hash;
     const foot = $(".footer");
-    if (foot) IA.observeReveals(foot, new IA.Scope());
+    if (foot) { applySite(foot); IA.fitAll(foot); IA.observeReveals(foot, new IA.Scope()); }
+    applySite($("#menu") || document.createElement("div"));
     mountPage($("main"));
     intro();
   }

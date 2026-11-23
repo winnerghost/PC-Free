@@ -1,4 +1,4 @@
-/* IRIS ARDEN — pages.js
+/* SYED ARHAM ASHRAF — pages.js
    One module per page. Each init(ctx) receives { main, scope, iris } and may
    set ctx.iris to a preset object or a function of scroll position. Anything
    registered on ctx.scope is torn down when the router swaps pages. */
@@ -9,9 +9,11 @@
   const P = (IA.pages = IA.pages || {});
 
   const ARROW = '<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.4"/></svg>';
+  const OUT = '<svg class="arrow" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" stroke-width="1.4"/></svg>';
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const projectHref = (p) => `project.html#${p.slug}`;
-  const linkAttrs = (p) => `href="${projectHref(p)}" data-label="${esc(p.title)}" data-kicker="${esc(p.client)}"`;
+  const ventureHref = (p) => `venture.html#${p.slug}`;
+  const linkAttrs = (p) => `href="${ventureHref(p)}" data-label="${esc(p.title)}" data-kicker="${esc(p.kind)}"`;
+  IA.esc = esc;
 
   /* idle-time cover rendering so hovers never stutter */
   function warmCovers(list, w, h, scope) {
@@ -22,16 +24,16 @@
       IA.art.cover(list[i++], w, h);
       idle(next);
     };
-    idle(next);
+    (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => idle(next));
   }
 
-  /* ---------------- work list rows + floating preview ---------------- */
+  /* ---------------- venture rows + floating preview ---------------- */
   function renderRows(listEl, projects) {
     listEl.innerHTML = projects
       .map(
         (p) => `<li data-tags="${p.tags.join(" ")}">
   <a class="work-row" ${linkAttrs(p)} data-cursor="Open" data-slug="${p.slug}">
-    <span class="label year">${p.year}</span>
+    <span class="label year">${esc(p.kind)}</span>
     <span class="work-row-title">${esc(p.title)}</span>
     <span class="work-row-tags">${p.tags.map((t) => `<span class="chip">${t}</span>`).join("")}</span>
     <span class="work-row-arrow" aria-hidden="true">${ARROW}</span>
@@ -43,7 +45,7 @@
   }
 
   function bindPreview(listEl, scope) {
-    const thumbs = $$(".work-row", listEl);
+    const rows = $$(".work-row", listEl);
     // phone/tablet: inline thumbnails painted when visible
     const io = scope.observe(new IntersectionObserver((entries) => {
       entries.forEach((en) => {
@@ -54,7 +56,7 @@
         io.unobserve(row);
       });
     }, { rootMargin: "200px" }));
-    thumbs.forEach((r) => io.observe(r));
+    rows.forEach((r) => io.observe(r));
 
     if (!IA.env.fine) return;
     const pv = document.createElement("div");
@@ -65,15 +67,15 @@
     const canvas = pv.querySelector("canvas");
     const cap = pv.querySelector(".hover-preview-cap");
     let mx = 0, my = 0, x = 0, y = 0, rot = 0, active = null, shownOnce = false;
-    warmCovers($$(".work-row", listEl).map((r) => IA.project(r.dataset.slug)), 400, 300, scope);
+    warmCovers(rows.map((r) => IA.project(r.dataset.slug)), 400, 300, scope);
 
     scope.on(window, "pointermove", (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
-    thumbs.forEach((row) => {
+    rows.forEach((row) => {
       scope.on(row, "pointerenter", () => {
         const p = IA.project(row.dataset.slug);
         if (active !== p) IA.art.blit(canvas, IA.art.cover(p, 400, 300));
         active = p;
-        cap.textContent = `${p.client} · ${p.year}`;
+        cap.textContent = [p.kind, p.role].filter(Boolean).join(" · ");
         if (!shownOnce) { x = mx; y = my; shownOnce = true; }
         pv.classList.add("is-on");
       });
@@ -154,7 +156,7 @@
         const e = Math.pow(p, 2.1);
         return {
           cx: 0.5,
-          cy: mobile() ? 0.43 : 0.455,
+          cy: mobile() ? 0.43 : 0.44,
           pupil: IA.lerp(mobile() ? 0.12 : 0.105, 1.9, e),
           iris: IA.lerp(mobile() ? 0.42 : 0.4, 3.6, e),
           intensity: IA.lerp(1, 0.75, p),
@@ -201,10 +203,10 @@
         }, 20);
       }
 
-      // selected work
+      // ventures
       const list = $("[data-work-list]", main);
       if (list) {
-        renderRows(list, IA.projects.filter((p) => p.featured));
+        renderRows(list, IA.projects);
         bindPreview(list, scope);
       }
 
@@ -253,9 +255,9 @@
   };
 
   /* =================================================================
-     WORK
+     VENTURES (index)
      ================================================================= */
-  P.work = {
+  P.ventures = {
     init(ctx) {
       const { main, scope } = ctx;
       ctx.iris = (y) => {
@@ -280,12 +282,12 @@
     <canvas class="latent" aria-hidden="true"></canvas>
     <canvas class="developed" aria-hidden="true"></canvas>
     <span class="card-glare" aria-hidden="true"></span>
-    <span class="card-badge">${p.year} · ${p.tags.join(" / ")}</span>
+    <span class="card-badge">${esc([p.kind, p.role].filter(Boolean).join(" · "))}</span>
     <span class="card-hint" aria-hidden="true">${IA.env.fine ? "Hover to develop" : ""}</span>
   </div>
   <div class="card-info">
     <h2 class="card-title">${esc(p.title)}</h2>
-    <span class="label">${esc(p.client)}</span>
+    <span class="label">${esc(p.tags.join(" · "))}</span>
     <p class="card-sub">${esc(p.tagline)}</p>
   </div>
 </a>`
@@ -309,9 +311,12 @@
           const p = IA.project(card.dataset.slug);
           const dev = card.querySelector(".developed");
           const lat = card.querySelector(".latent");
-          IA.art.paint(dev, p, { maxDpr: 1.6 });
-          const { w, h } = IA.fitCanvas(lat, 1.6);
-          lat.getContext("2d").drawImage(dev, 0, 0, w, h);
+          const paint = () => {
+            IA.art.paint(dev, p, { maxDpr: 1.6 });
+            const { w, h } = IA.fitCanvas(lat, 1.6);
+            lat.getContext("2d").drawImage(dev, 0, 0, w, h);
+          };
+          (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => !scope.dead && paint());
           io.unobserve(card);
         });
       }, { rootMargin: "300px" }));
@@ -322,13 +327,12 @@
         let r = IA.env.fine ? 0 : 4000;
         dev.style.setProperty("--r", r + "px");
         if (!IA.env.fine) return;
-        let stop = null;
+        let token = null;
         const to = (target, dur) => {
-          if (stop) stop.cancelled = true;
-          const token = { cancelled: false };
-          stop = token;
-          const from = r;
-          IA.tween({ from, to: target, duration: dur, ease: IA.ease.outExpo, onUpdate: (v) => { if (token.cancelled) return; r = v; dev.style.setProperty("--r", v.toFixed(1) + "px"); } });
+          if (token) token.cancelled = true;
+          const mine = { cancelled: false };
+          token = mine;
+          IA.tween({ from: r, to: target, duration: dur, ease: IA.ease.outExpo, onUpdate: (v) => { if (mine.cancelled) return; r = v; dev.style.setProperty("--r", v.toFixed(1) + "px"); } });
         };
         scope.on(card, "pointerenter", () => to(Math.max(card.offsetWidth * 0.32, 160), 900));
         scope.on(card, "pointerleave", () => to(0, 700));
@@ -379,16 +383,17 @@
   };
 
   /* =================================================================
-     PROJECT (case study rendered from data.js)
+     VENTURE (one page per venture, rendered from data.js)
+     Every block hides itself when its data is empty.
      ================================================================= */
-  P.project = {
+  P.venture = {
     init(ctx) {
       const { main, scope } = ctx;
       const slug = decodeURIComponent((IA.routeHash != null ? IA.routeHash : location.hash).replace(/^#/, ""));
       const idx = Math.max(0, IA.projects.findIndex((p) => p.slug === slug));
       const p = IA.projects[idx];
       const next = IA.projects[(idx + 1) % IA.projects.length];
-      document.title = `${p.title} · Iris Arden`;
+      document.title = `${p.title} · ${IA.site.name}`;
       ctx.iris = (y) => {
         const m = IA.env.mobile;
         return IA.irisScroll(
@@ -398,45 +403,49 @@
         );
       };
 
-      const set = (key, value, isHTML) => $$(`[data-p="${key}"]`, main).forEach((el) => (isHTML ? (el.innerHTML = value) : (el.textContent = value)));
+      const set = (key, value, isHTML) => $$(`[data-p="${key}"]`, main).forEach((el) => {
+        if (isHTML) el.innerHTML = value;
+        else el.textContent = value;
+        const hideTarget = el.closest("[data-p-wrap]") || el;
+        hideTarget.hidden = !value;
+      });
       const words = p.title.split(" ");
-      const titleHTML = words.length > 1 ? `${esc(words.slice(0, -1).join(" "))} <span class="serif">${esc(words[words.length - 1])}</span>` : esc(p.title);
-      set("title", titleHTML, true);
-      set("client", p.client);
-      set("year", String(p.year));
-      set("tags", p.tags.join(" / "));
-      set("tagline", p.tagline);
+      set("title", words.length > 1 ? `${esc(words.slice(0, -1).join(" "))} <span class="serif">${esc(words[words.length - 1])}</span>` : esc(p.title), true);
+      set("kind", p.kind);
       set("role", p.role);
-      set("duration", p.duration);
-      set("stack", p.stack.join(", "));
+      set("status", p.status);
+      set("tags", p.tags.join(" · "));
+      set("tagline", p.tagline);
+      set("stack", (p.stack || []).join(", "));
+      set("online", p.link ? p.link.label : "");
       set("summary", p.summary);
-      set("challenge", p.challenge);
-      set("frame-cap", `${p.client} · ${p.year} · Live render`);
+      set("idea", p.idea);
+      set("includes-title", p.includes && p.includes.length ? p.includesTitle || "What it includes" : "");
+      set("includes", (p.includes || []).map((it) => `<li data-reveal>${esc(it)}</li>`).join(""), true);
       set(
-        "approach",
-        p.approach.map((a, i) => `<li class="p-step" data-reveal style="--d:${i * 90}ms"><span class="label">Step ${i + 1}</span><div><h3>${esc(a[0])}</h3><p>${esc(a[1])}</p></div></li>`).join(""),
+        "story",
+        (p.story || []).map((s, i) => `<li class="p-step" data-reveal style="--d:${i * 90}ms"><span class="label">${esc(s[0])}</span><p>${esc(s[1])}</p></li>`).join(""),
         true
       );
-      set(
-        "results",
-        p.results
-          .map((r, i) => {
-            const val = `${r.prefix || ""}${r.decimals ? r.v.toFixed(r.decimals) : r.v}${r.suffix || ""}`;
-            return `<div class="p-result" data-reveal style="--d:${i * 110}ms"><b data-count="${r.v}" data-decimals="${r.decimals || 0}" data-prefix="${esc(r.prefix || "")}" data-suffix="${esc(r.suffix || "")}">${esc(val)}</b><span>${esc(r.l)}</span></div>`;
-          })
-          .join(""),
-        true
-      );
-      set("credits", p.credits.map((c) => `<div><dt>${esc(c[0])}</dt><dd>${esc(c[1])}</dd></div>`).join(""), true);
+      set("frame-cap", `${p.title} · cover artwork, drawn live`);
+      const link = $("[data-p-link]", main);
+      if (link) {
+        const wrap = link.closest("[data-p-wrap]");
+        if (p.link) {
+          link.href = p.link.href;
+          link.querySelector("span").textContent = `Visit ${p.link.label}`;
+          if (wrap) wrap.hidden = false;
+        } else if (wrap) wrap.hidden = true;
+      }
       const nextLink = $("[data-p-next]", main);
       if (nextLink) {
-        nextLink.setAttribute("href", projectHref(next));
+        nextLink.setAttribute("href", ventureHref(next));
         nextLink.dataset.label = next.title;
-        nextLink.dataset.kicker = next.client;
+        nextLink.dataset.kicker = next.kind;
         set("next-title", next.title);
-        set("next-client", `${next.client} · ${next.year}`);
+        set("next-kind", [next.kind, next.role].filter(Boolean).join(" · "));
         const nc = $(".p-next-cover canvas", main);
-        if (nc) IA.introReady.then(() => !scope.dead && IA.art.blit(nc, IA.art.cover(next, 400, 300)));
+        if (nc) IA.introReady.then(() => (document.fonts ? document.fonts.ready : Promise.resolve())).then(() => !scope.dead && IA.art.blit(nc, IA.art.cover(next, 400, 300)));
       }
 
       // hero: a live render of the cover that opens to full bleed on scroll
@@ -460,19 +469,6 @@
         acc = 0;
         paintLive(time);
       }, 25);
-
-      // gallery: alternate compositions from the same generator
-      $$(".p-shot", main).forEach((shot, i) => {
-        const c = shot.querySelector("canvas");
-        const cap = shot.querySelector("figcaption");
-        if (cap) cap.textContent = ["Detail study", "System at rest", "Full composition"][i] || "Study";
-        const sio = scope.observe(new IntersectionObserver((en) => {
-          if (!en[0].isIntersecting) return;
-          IA.art.paint(c, p, { variant: i + 1, zoom: [1.6, 1.25, 1][i] || 1, panX: [0.12, -0.08, 0][i] || 0, panY: [0.05, 0.1, 0][i] || 0 });
-          sio.disconnect();
-        }, { rootMargin: "300px" }));
-        sio.observe(shot);
-      });
     },
   };
 
@@ -566,11 +562,112 @@
     }, 25);
   }
 
+  /* Raebareli to Lucknow, and beyond: a small live map with real coordinates */
+  function journeyMap(canvas, scope) {
+    const places = [
+      { name: "Raebareli", note: "Home base", lat: 26.2309, lon: 81.233 },
+      { name: "Lucknow", note: "Next", lat: 26.8467, lon: 80.9462 },
+    ];
+    const R = 6371;
+    const toRad = (d) => (d * Math.PI) / 180;
+    const [a, b] = places;
+    const dLat = toRad(b.lat - a.lat), dLon = toRad(b.lon - a.lon);
+    const hv = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) ** 2;
+    const km = Math.round(2 * R * Math.asin(Math.sqrt(hv)));
+    const lat0 = (a.lat + b.lat) / 2, lon0 = (a.lon + b.lon) / 2, cosLat = Math.cos(toRad(lat0));
+    let visible = false;
+    const io = scope.observe(new IntersectionObserver((en) => (visible = en[0].isIntersecting)));
+    io.observe(canvas);
+    scope.tick((dt, t) => {
+      if (!visible) return;
+      const { w, h, dpr } = IA.fitCanvas(canvas, 2);
+      const ctx = canvas.getContext("2d");
+      const c = IA.colors;
+      const scale = Math.min(w, h) * 1.12; // pixels per degree
+      const ox = w * 0.6, oy = h * 0.56;
+      const P = (lat, lon) => [ox + (lon - lon0) * cosLat * scale, oy - (lat - lat0) * scale];
+      ctx.clearRect(0, 0, w, h);
+      // graticule every quarter degree
+      ctx.lineWidth = dpr;
+      ctx.font = `${10 * dpr}px "JetBrains Mono", ui-monospace, monospace`;
+      ctx.textBaseline = "top";
+      for (let lat = 25.5; lat <= 27.75; lat += 0.25) {
+        const y = P(lat, lon0)[1];
+        if (y < 0 || y > h) continue;
+        ctx.strokeStyle = IA.rgba(c.fg3, lat % 1 === 0 ? 0.35 : 0.14);
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        if (lat % 0.5 === 0) { ctx.fillStyle = IA.rgba(c.fg3, 0.9); ctx.fillText(`${lat.toFixed(2)}° N`, 8 * dpr, y + 4 * dpr); }
+      }
+      for (let lon = 80; lon <= 82.25; lon += 0.25) {
+        const x = P(lat0, lon)[0];
+        if (x < 0 || x > w) continue;
+        ctx.strokeStyle = IA.rgba(c.fg3, lon % 1 === 0 ? 0.35 : 0.14);
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+        if (lon % 0.5 === 0) { ctx.fillStyle = IA.rgba(c.fg3, 0.9); ctx.fillText(`${lon.toFixed(2)}° E`, x + 4 * dpr, h - 16 * dpr); }
+      }
+      const pa = P(a.lat, a.lon), pb = P(b.lat, b.lon);
+      // route, then the open-ended "beyond"
+      const dx = pb[0] - pa[0], dy = pb[1] - pa[1];
+      ctx.save();
+      ctx.setLineDash([5 * dpr, 7 * dpr]);
+      ctx.lineDashOffset = IA.env.reduced ? 0 : -t * 22 * dpr;
+      ctx.lineWidth = 1.6 * dpr;
+      const g1 = ctx.createLinearGradient(pa[0], pa[1], pb[0], pb[1]);
+      g1.addColorStop(0, IA.rgba(c.jade, 0.95));
+      g1.addColorStop(1, IA.rgba(c.lilac, 0.95));
+      ctx.strokeStyle = g1;
+      ctx.beginPath();
+      ctx.moveTo(pa[0], pa[1]);
+      ctx.quadraticCurveTo(pa[0] + dx * 0.5 + dy * 0.25, pa[1] + dy * 0.5 - dx * 0.25, pb[0], pb[1]);
+      ctx.stroke();
+      const far = [pb[0] + dx * 2.4, pb[1] + dy * 2.4];
+      const ctrl = [pb[0] + dx * 1.2 - dy * 0.3, pb[1] + dy * 1.2 + dx * 0.3];
+      const g2 = ctx.createLinearGradient(pb[0], pb[1], far[0], far[1]);
+      g2.addColorStop(0, IA.rgba(c.lilac, 0.9));
+      g2.addColorStop(0.5, IA.rgba(c.peach, 0.5));
+      g2.addColorStop(1, IA.rgba(c.peach, 0));
+      ctx.strokeStyle = g2;
+      ctx.beginPath();
+      ctx.moveTo(pb[0], pb[1]);
+      ctx.quadraticCurveTo(ctrl[0], ctrl[1], far[0], far[1]);
+      ctx.stroke();
+      ctx.restore();
+      // point a third of the way along "beyond", for its label
+      const q = 0.3, iq = 1 - q;
+      const beyond = [iq * iq * pb[0] + 2 * iq * q * ctrl[0] + q * q * far[0], iq * iq * pb[1] + 2 * iq * q * ctrl[1] + q * q * far[1]];
+      // places
+      [[pa, a, c.jade], [pb, b, c.lilac]].forEach(([pt, place, col], i) => {
+        const pulse = IA.env.reduced ? 0.5 : (t * 0.6 + i * 0.5) % 1;
+        ctx.strokeStyle = IA.rgba(col, 0.6 * (1 - pulse));
+        ctx.lineWidth = dpr;
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], (6 + pulse * 22) * dpr, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = IA.rgba(col, 1);
+        ctx.beginPath(); ctx.arc(pt[0], pt[1], 4.5 * dpr, 0, Math.PI * 2); ctx.fill();
+        const right = i === 0;
+        ctx.textAlign = right ? "left" : "right";
+        const lx = pt[0] + (right ? 14 : -14) * dpr;
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = IA.rgba(c.fg, 1);
+        ctx.font = `600 ${17 * dpr}px Syne, "Arial Black", sans-serif`;
+        ctx.fillText(place.name, lx, pt[1] - 2 * dpr);
+        ctx.fillStyle = IA.rgba(c.fg2, 1);
+        ctx.font = `${10 * dpr}px "JetBrains Mono", ui-monospace, monospace`;
+        ctx.fillText(`${place.note.toUpperCase()} · ${place.lat.toFixed(2)}° N ${place.lon.toFixed(2)}° E`, lx, pt[1] + 14 * dpr);
+      });
+      ctx.textAlign = "left";
+      const mid = [(pa[0] + pb[0]) / 2 + dy * 0.2, (pa[1] + pb[1]) / 2 - dx * 0.2];
+      ctx.fillStyle = IA.rgba(c.fg2, 1);
+      ctx.fillText(`≈ ${km} km`, mid[0] + 10 * dpr, mid[1]);
+      ctx.fillStyle = IA.rgba(c.peach, 0.95);
+      ctx.fillText("AND BEYOND", IA.clamp(beyond[0] + 14 * dpr, 8 * dpr, w - 90 * dpr), IA.clamp(beyond[1], 24 * dpr, h - 24 * dpr));
+    }, 25);
+  }
+
   function constellation(wrap, scope) {
     const canvas = wrap.querySelector("canvas");
     const items = $$("[data-skill]", wrap.closest("section") || document);
-    const groups = ["Design", "Code", "Practice"];
-    const centers = [[0.24, 0.4], [0.7, 0.36], [0.48, 0.72]];
+    const groups = ["Build", "Business", "Create"];
+    const centers = [[0.25, 0.38], [0.72, 0.34], [0.5, 0.74]];
     const r = IA.rng(42);
     const nodes = items.map((li) => {
       const g = Math.max(0, groups.indexOf(li.dataset.group));
@@ -578,14 +675,13 @@
       const hx = centers[g][0] + Math.cos(a) * d * 1.2, hy = centers[g][1] + Math.sin(a) * d;
       return { label: li.dataset.skill, li, g, hx, hy, x: hx, y: hy, vx: 0, vy: 0, ph: r() * 10 };
     });
-    // edges: two nearest within group + a few bridges
     const edges = [];
     nodes.forEach((n, i) => {
       const near = nodes.map((m, j) => [j, (m.hx - n.hx) ** 2 + (m.hy - n.hy) ** 2]).filter(([j]) => j !== i && nodes[j].g === n.g).sort((a, b) => a[1] - b[1]).slice(0, 2);
-      near.forEach(([j]) => { if (!edges.some((e) => (e[0] === j && e[1] === i))) edges.push([i, j]); });
+      near.forEach(([j]) => { if (!edges.some((e) => e[0] === j && e[1] === i)) edges.push([i, j]); });
     });
-    [["GLSL", "Generative art"], ["Figma", "Design systems"], ["Three.js", "Prototyping"], ["Rive", "Motion systems"], ["Blender", "WebGPU"]].forEach(([a, b]) => {
-      const i = nodes.findIndex((n) => n.label === a), j = nodes.findIndex((n) => n.label === b);
+    [["Website development", "Brand building"], ["AI-powered tools", "Product ideation"], ["Interactive web", "Visual storytelling"], ["Digital marketing", "Brand building"], ["Roblox Studio", "Game concepts"]].forEach(([x, y]) => {
+      const i = nodes.findIndex((n) => n.label === x), j = nodes.findIndex((n) => n.label === y);
       if (i > -1 && j > -1) edges.push([i, j]);
     });
     const mouse = { x: -9, y: -9, in: false };
@@ -615,7 +711,7 @@
       const { w, h, dpr } = IA.fitCanvas(canvas, 2);
       const ctx = canvas.getContext("2d");
       const c = IA.colors;
-      const pal = [c.peach, c.lilac, c.jade];
+      const pal = [c.jade, c.peach, c.lilac];
       const aspect = w / h;
       let best = -1, bestD = 0.0016;
       nodes.forEach((n, i) => {
@@ -665,8 +761,11 @@
         ctx.arc(x, y, (on ? 5 : 3.2) * dpr, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = IA.rgba(on ? c.fg : c.fg2, on ? 1 : 0.85);
-        ctx.fillText(n.label.toUpperCase(), x + 10 * dpr, y);
+        const right = n.x < 0.62;
+        ctx.textAlign = right ? "left" : "right";
+        ctx.fillText(n.label.toUpperCase(), x + (right ? 10 : -10) * dpr, y);
       });
+      ctx.textAlign = "left";
     }, 25);
   }
 
@@ -685,6 +784,8 @@
       };
       const portrait = $(".portrait-frame canvas", main);
       if (portrait) contourPortrait(portrait, scope);
+      const map = $(".journey-map canvas", main);
+      if (map) journeyMap(map, scope);
       const con = $(".constellation", main);
       if (con) constellation(con, scope);
     },
@@ -696,13 +797,14 @@
   P.contact = {
     init(ctx) {
       const { main, scope } = ctx;
-      // the form sits inside the pupil: scrolling dilates it like the home page
       ctx.iris = (y) => {
         const m = IA.env.mobile;
         // dark theme: the pupil sits behind the title; porcelain: beside it, so dark type stays legible
         const L = IA.colors.light;
         return IA.irisScroll(
-          { cx: L ? (m ? 0.72 : 0.76) : 0.5, cy: L ? (m ? 0.56 : 0.6) : m ? 0.3 : 0.42, pupil: m ? 0.13 : 0.12, iris: 0.5, intensity: 0.85, dust: 0.45, hue: 0.55 },
+          L && m
+            ? { cx: 0.84, cy: 0.1, pupil: 0.07, iris: 0.34, intensity: 0.9, dust: 0.45, hue: 0.55 }
+            : { cx: L ? 0.76 : 0.5, cy: L ? 0.6 : m ? 0.3 : 0.42, pupil: m ? 0.13 : 0.12, iris: 0.5, intensity: 0.85, dust: 0.45, hue: 0.55 },
           { cx: 0.5, cy: 0.45, pupil: 1.7, iris: 3.4, intensity: 0.7, dust: 0.85 },
           y,
           1.1
@@ -743,17 +845,15 @@
       const email = $("[data-email]", main);
       $$("[data-copy-email]", main).forEach((b) => scope.on(b, "click", () => IA.copy(IA.site.email, email)));
 
-      // form
+      // the form needs somewhere to go: an email address or a form service
       const form = $("form[data-contact]", main);
       if (!form) return;
+      const endpoint = IA.site.formEndpoint || form.dataset.endpoint || "";
+      const formWrap = $(".contact-form-wrap", main);
+      if (!IA.site.email && !endpoint) { if (formWrap) formWrap.hidden = true; return; }
       const done = $(".form-done", main);
       $$(".choices [aria-pressed]", form).forEach((chip) => {
-        scope.on(chip, "click", () => {
-          const group = chip.closest(".choices");
-          const single = group.dataset.single !== undefined;
-          if (single) $$("[aria-pressed]", group).forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
-          else chip.setAttribute("aria-pressed", String(chip.getAttribute("aria-pressed") !== "true"));
-        });
+        scope.on(chip, "click", () => chip.setAttribute("aria-pressed", String(chip.getAttribute("aria-pressed") !== "true")));
       });
       let lastBody = "";
       scope.on(done.querySelector("[data-copy-message]"), "click", () => IA.copy(lastBody, done.querySelector("pre")));
@@ -783,39 +883,44 @@
         e.preventDefault();
         if (!validate()) return;
         const data = new FormData(form);
-        const pick = (g) => $$(`[data-group="${g}"] [aria-pressed="true"]`, form).map((c) => c.textContent.trim());
+        const topics = $$('[data-group="type"] [aria-pressed="true"]', form).map((c) => c.textContent.trim());
         const body = [
           `Name: ${data.get("name")}`,
           `Email: ${data.get("email")}`,
-          `Company: ${data.get("company") || "—"}`,
-          `Project: ${pick("type").join(", ") || "Not specified"}`,
-          `Budget: ${pick("budget").join(", ") || "Not specified"}`,
+          `Business or organisation: ${data.get("company") || "-"}`,
+          `About: ${topics.join(", ") || "Not specified"}`,
           "",
           String(data.get("message")),
         ].join("\n");
-        const endpoint = form.dataset.endpoint;
-        const btn = form.querySelector('[type="submit"]');
+        const h3 = done.querySelector("h3"), p = done.querySelector("p");
         if (endpoint) {
+          const btn = form.querySelector('[type="submit"]');
           btn.disabled = true;
           try {
             const res = await fetch(endpoint, { method: "POST", headers: { Accept: "application/json" }, body: data });
             if (!res.ok) throw new Error(res.status);
-            done.querySelector("h3").textContent = "Message sent.";
-            done.querySelector("p").textContent = "Thank you. I reply to every message within two working days.";
+            h3.textContent = "Message sent.";
+            p.textContent = "Thank you for reaching out.";
           } catch (err) {
-            done.querySelector("h3").textContent = "The message didn't send.";
-            done.querySelector("p").textContent = "Your connection or the form service failed. Copy the message below and email it directly.";
+            h3.textContent = "The message didn't send.";
+            p.textContent = "The connection or the form service failed. Copy the message below and send it by email instead.";
           }
           btn.disabled = false;
+        } else {
+          h3.textContent = "Your message is ready.";
+          p.textContent = `This site has no mail server, so the message goes out from your own email. Open it in your email app, or copy it and send it to ${IA.site.email}.`;
         }
         lastBody = body;
         done.querySelector("pre").textContent = body;
         const mail = done.querySelector("[data-mailto]");
-        if (mail) mail.href = `mailto:${IA.site.email}?subject=${encodeURIComponent("Project enquiry from " + data.get("name"))}&body=${encodeURIComponent(body)}`;
+        if (mail) {
+          mail.hidden = !IA.site.email;
+          mail.href = `mailto:${IA.site.email}?subject=${encodeURIComponent("Hello from " + data.get("name"))}&body=${encodeURIComponent(body)}`;
+        }
         form.hidden = true;
         done.hidden = false;
         IA.scroll.measure();
-        done.querySelector("h3").focus();
+        h3.focus();
       });
     },
   };

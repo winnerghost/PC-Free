@@ -1,4 +1,4 @@
-/* IRIS ARDEN — gl.js
+/* SYED ARHAM ASHRAF — gl.js
    The living iris: a full-screen fragment shader drawn behind every page.
    Fibres are polar fbm noise, coloured by an opal thin-film palette. The pupil
    dilates with scroll, the fibres lean toward the cursor, and each page eases
@@ -110,7 +110,7 @@ void main(){
   }
 
   float pupil = 1.0 - smoothstep(pr - 0.0025, pr + 0.0012, r);
-  vec3 pcol = mix(uPupilCol, uBg, smoothstep(0.35, 1.1, pr));
+  vec3 pcol = mix(uPupilCol, uBg, smoothstep(0.16, 0.6, pr));
 
   vec2 cell = floor(frag / 28.0);
   float h = hash12(cell);
