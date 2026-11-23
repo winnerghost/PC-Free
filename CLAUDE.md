@@ -26,7 +26,8 @@ Not yet provided (ask before adding): a public email address, social profile lin
 
 ## Working on the portfolio
 
-- Static site, no build step, no dependencies. Serve `portfolio/` with any static server (`python3 -m http.server`).
+- Static site, no build step. Serve `portfolio/` with any static server (`python3 -m http.server`). GSAP, ScrollTrigger and Lenis are vendored in `portfolio/assets/js/vendor/`.
 - All venture content lives in `portfolio/assets/js/data.js` (`IA.projects`), and site settings (email, form endpoint, social links, time zone) in `IA.site` in the same file.
-- The six HTML pages share identical header, menu, footer and script blocks. A change to navigation or the footer must be made in all six.
-- Design: dark "Lacquer" and light "Porcelain" themes; all colours and type are tokens at the top of `portfolio/assets/css/style.css`. The WebGL iris (`gl.js`) stands for vision, the founder's eye for opportunities.
+- The five HTML pages (index, ventures, venture, about, contact) share identical header, menu, backstage, footer and script blocks. A change to navigation or the footer must be made in all five.
+- Concept, "Liquid → Solid" (chosen after Arham rejected an earlier iris/aperture design as generic; do not bring that back): one ray-marched liquid-chrome object (`scene.js`) travels through the site, hardening from liquid into each venture's form. Pages behave as cards: the menu drops the page to reveal links and previews each page's form; page changes deal a new card in. Type is Archivo with its variable width axis plus Geist Mono labels; studio-grey light sections and ink dark sections, signal blue accent. Tokens are at the top of `portfolio/assets/css/main.css`.
+- Sections place the object with `data-obj="shape x y size dark [accent]"` (`data-obj-m` for phones) and set colours with `data-tone`.
